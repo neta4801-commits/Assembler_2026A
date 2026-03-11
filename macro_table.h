@@ -5,8 +5,6 @@
 #define MACRO_TABLE_H
 #include "constant.h"
 
-/* Constant numbers */
-#define NUMBER_TWO 2
 
 /* represents a single line from the macro the user was writing (including '\n' and '\0'). */
 typedef struct macro_line_node {

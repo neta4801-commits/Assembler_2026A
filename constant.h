@@ -5,7 +5,9 @@
 #define CONSTANT_H
 
 /* constant numbers */
+#define NUMBER_ZERO 0
 #define NUMBER_ONE 1
+#define NUMBER_TWO 2
 
 /* Constant values according to course manual. */
 #define MAX_LINE_LENGTH 80

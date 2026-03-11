@@ -9,6 +9,7 @@
 
 /* Constant values according to course manual. */
 #define MAX_LINE_LENGTH 80
+/* MAX_LABEL_LENGTH = Max length for label and also for macro names. */
 #define MAX_LABEL_LENGTH 31
 #define MEMORY_SIZE 4096
 #define IC_START 100

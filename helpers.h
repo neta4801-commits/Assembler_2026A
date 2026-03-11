@@ -19,7 +19,9 @@ boolean is_empty_or_comment(char *line);
 
 
 char *create_file_name(const char *original_name, char *extension);
-/*combine file name with extension and create a file with full name */
+/* combines file name with extension to create a full name for a file.
+ * ('helpers' + '.h' = 'helpers.h')
+ */
 
 
 #endif

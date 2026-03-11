@@ -31,16 +31,16 @@ typedef macro_node *macro_ptr;
 /* This function gets a pointer to the head of the macros list and a macro name.
  * The function searches macro on the list by his name.
  * Returns a pointer to this macro with his code lines.  */
-macro_ptr get_macro(macro_ptr head, const char *name);
+macro_ptr get_macro(macro_ptr head,  char *name);
 
 /*This function gets a pointer to macro and the value of line.
 * The function adds the new line to the macro lines. */
-void add_macro_line(macro_ptr macro, const char *line);
+void add_macro_line(macro_ptr macro,  char *line);
 
 
 /* This function gets a pointer to the head of the macros list and macro name.
  * The function adds the new macro to the macros list and returns a pointer to this macro with his code lines. */
-macro_ptr add_macro(macro_ptr *head, const char *name);
+macro_ptr add_macro(macro_ptr *head,  char *name);
 
 /* This function gets a pointer to the head of the macros list and safely free all allocated memory */
 void free_macro_table(macro_ptr head);

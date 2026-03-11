@@ -87,7 +87,8 @@ boolean pre_assemble(FILE *source_file char *base_file_name, AssemblerContext *c
         if (strcmp(first_word, "mcro") == 0) {
           char macro_name[MAX_LABEL_LENGTH + 2] = {0};
           extract_word(&line_ptr, macro_name);
-                
+          
+          /* Checks for errors in the macro name */
           if (macro_name[0] == '\0') {
             fprintf(stderr, "Error at line %d: Missing macro name.\n", context->line_number);
             context->error_found = TRUE;
@@ -98,32 +99,36 @@ boolean pre_assemble(FILE *source_file char *base_file_name, AssemblerContext *c
               fprintf(stderr, "Error at line %d: Macro '%s' already defined.\n", context->line_number, macro_name);
                context->error_found = TRUE;
           } else {
+              /* Name is good, and needs saving */
               skip_whitespaces(&line_ptr);
               if (*line_ptr != '\0' && *line_ptr != '\n') {
                 fprintf(stderr, "Error at line %d: Extraneous text.\n", context->line_number);
                 context->error_found = TRUE;
               }
-  current_macro = add_macro(&macro_head, macro_name);
-  is_inside_macro = TRUE;
+              current_macro = add_macro(&macro_head, macro_name);
+              is_inside_macro = TRUE;
           }
-        } 
-        else if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
+      } 
+      /* If we found a saved macro, write its lines to the file */
+      else if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
           macro_line_node *curr_line = found_macro->lines_head;
           while (curr_line != NULL) {
             fputs(curr_line->line, am_file);
             curr_line = curr_line->next;
             }
-          } 
+          }
+          /* Not a macro, write the regular code to file */
           else {
             fputs(line, am_file);
           }
         }
         context->line_number++;
       }
-
+    /* Close the file, and free memory*/
     fclose(am_file);
     free(am_file_name);
     free_macro_table(macro_head); 
-
+    
+    /* Return true if there were no errors*/
     return !context->error_found;
 }

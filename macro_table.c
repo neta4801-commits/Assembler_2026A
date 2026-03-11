@@ -6,16 +6,17 @@
 #include "helpers.h"
 
 /* This function gets a pointer to the head of the macros list and a macro name.
- * The function searches macro on the list by his name.
- * Returns a pointer to this macro with his code lines.  */
+ * The function searches for macros on the list by its name,
+ * and returns a pointer to this macro with its code lines.  */
 macro_ptr get_macro(macro_ptr head,  char *macro_name) {
     macro_ptr current = head;
     if(macro_name == NULL) {
         return NULL;
     }
     while(current != NULL) {
+    /* if the target name is the same return current*/
         if(strcmp(current->macro_name, macro_name)== 0)  {
-            return current;
+            return current; 
         }
         current = current->next;
     }
@@ -23,18 +24,18 @@ macro_ptr get_macro(macro_ptr head,  char *macro_name) {
 }
 
 /*This function gets a pointer to macro and the value of line.
-* The function adds the new line to the macro lines. */
+* The function adds a new line to the macro lines. */
 void add_macro_line(macro_ptr current_macro,  char *macro_line) {
     macro_line_node *new_macro_line;
 
-    /* If the line context or the name context of the macro are empty, we need to exit from the function and not add anything. */
+    /* If the macro values are empty, we need to exit from the function and not add anything. */
     if(current_macro == NULL || macro_line == NULL) {
         return ;
     }
 
-    new_macro_line = (macro_line_node *)check_malloc(sizeof(macro_line_node));
+    new_macro_line = (macro_line_node *)check_malloc(sizeof(macro_line_node)); /*helper function */
 
-    /* We need to copy the context line to the lines list including the tav : '\n'. */
+    /* copies the context macro line to the list of lines including '\n'. */
     strncpy(new_macro_line->line, macro_line, MAX_LINE_LENGTH + NUMBER_ONE);
     new_macro_line->macro_line[MAX_LINE_LENGTH + NUMBER_ONE] = '\0';
     new_macro_line->next = NULL;
@@ -45,7 +46,7 @@ void add_macro_line(macro_ptr current_macro,  char *macro_line) {
         current_macro->lines_tail = new_macro_line;
     }
 
-    /* We add a new line to our lines list for this macro. */
+    /* adds a new line to our list of lines for this macro. */
     else {
         current_macro->lines_tail->next = new_line;
         current_macro->lines_tail = new_line;

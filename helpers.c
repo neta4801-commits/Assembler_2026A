@@ -9,16 +9,17 @@
 void *check_malloc(size_t size) { /* must have malloc safety check.*/
     void *ptr = malloc(size);
     if (ptr == NULL) {
-        fprintf(stderr, "Memory allocation failed.\n"); /* sending error output to stderr not stdout */ 
-        exit(EXIT_FAILURE);
+      fprintf(stderr, "Memory allocation failed.\n"); /* sending error output to stderr not stdout */ 
+      exit(EXIT_FAILURE);
     }
     return ptr;
 }
 
 void skip_spaces(char **str) {
-    if (str == NULL || *str == NULL) return;
+    if (str == NULL || *str == NULL)
+      return;
     while (**str == ' ' || **str == '\t') { 
-        (*str)++; /* skip if space or \t  */
+      (*str)++; /* skip if space or \t until first char found */
     }
 }
 
@@ -34,13 +35,13 @@ boolean is_empty_or_comment(char *line) {
 }
 
 char *create_file_name(char *original_name, char *extension) { 
-    char *full_name;
+    char *file_name;
     size_t length;
     if (original_name == NULL || extension == NULL)
       return NULL; /* check if either the name or the extension is empty. */
     length = strlen(original_name) + strlen(extension) + 1;
-    full_name = (char *)check_malloc(length);
-    strcpy(full_name, original_name); /* first copy original_name to full_name with \0 at the end of it*/
-    strcat(full_name, extension); /* secondly concatenate the extension, once it finds \0 */
-    return full_name;
+    file_name = (char *)check_malloc(length);
+    strcpy(file_name, original_name);/*first copy original_name to file_name with \0 at the end of the word*/
+    strcat(file_name, extension); /* secondly concatenate the extension, once it finds \0 */
+    return file_name;
 }

@@ -3,7 +3,7 @@
 #define UTILS_H
 
 #include <stddef.h>
-#include "globals.h"
+#include "constant.h"
 
 
 void *check_malloc(size_t size);

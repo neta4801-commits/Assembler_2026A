@@ -18,7 +18,7 @@ boolean is_empty_or_comment(char *line);
 /*returns true if line is empty, or is comment. */
 
 
-char *create_file_name(const char *original_name, char *extension);
+char *create_file_name(char *original_name, char *extension);
 /* combines file name with extension to create a full name for a file.
  * ('helpers' + '.h' = 'helpers.h')
  */

@@ -70,3 +70,4 @@ typedef struct {
     symbol_ptr symbol_head;
 } AssemblerState;
 
+#endif

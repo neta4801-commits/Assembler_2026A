@@ -1,4 +1,4 @@
-/* This file builds */
+/* This file handles macros and their lines of code with lists */
 
 #include <stdlib.h>
 #include <string.h>

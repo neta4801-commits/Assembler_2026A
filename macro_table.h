@@ -44,3 +44,6 @@ macro_ptr add_macro(macro_ptr *head,  char *macro_name);
 
 /* This function gets a pointer to the head of the macros list and safely free all allocated memory */
 void free_macro_table(macro_ptr head);
+
+
+#endif

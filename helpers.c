@@ -15,7 +15,7 @@ void *check_malloc(size_t size) { /* must have malloc safety check.*/
     return ptr;
 }
 
-void skip_spaces(char **str) {
+void skip_whitespaces(char **str) {
     if (str == NULL || *str == NULL)
       return;
     while (**str == ' ' || **str == '\t') { 

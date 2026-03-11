@@ -1,6 +1,7 @@
 /* Helpers header file */
 
-#define UTILS_H
+#ifndef HELPERS_H
+#define HELPERS_H
 
 #include <stddef.h>
 #include "constant.h"
@@ -10,7 +11,7 @@ void *check_malloc(size_t size);
 /*checks if memory allocation was successful. */
 
 
-void skip_spaces(char **str);
+void skip_whitespaces(char **str);
 /*skips spaces and '\t'. */
 
 

@@ -7,7 +7,7 @@
 
 /* There are words that we can use then as a macro name or label name, for example registers name as a label.
  * This function gets a word from the user's source file code
- * and returns true is this is a word that the user can't use and false otherwise. */
+ * and returns true if this is a word that the user can't use and false otherwise. */
 boolean is_forbidden_word(char *word);
 
 /* This function gets a macro or label name and checks if this is a legal name.

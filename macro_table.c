@@ -14,7 +14,7 @@ macro_ptr get_macro(macro_ptr head,  char *macro_name) {
         return NULL;
     }
     while(current != NULL) {
-    /* if the target name is the same return current*/
+    /* if the target name is the same return current */
         if(strcmp(current->macro_name, macro_name)== NUMBER_ZERO)  {
             return current; 
         }

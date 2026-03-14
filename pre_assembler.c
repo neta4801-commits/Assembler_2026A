@@ -140,3 +140,4 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
     /* Return true if there were no errors*/
     return !context->error_found;
 }
+

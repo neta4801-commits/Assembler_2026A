@@ -11,26 +11,33 @@
 #include "parser.h"
 #include "helpers.h"
 
-boolean pre_assemble(FILE *source_file char *base_file_name, AssemblerContext *context) {
 
-    char line[MAX_LINE_LENGTH + 2];
-    char first_word[MAX_LINE_LENGTH + 2];
+/* We pass the function a pointer to the file, the original name (no extension),
+ * and a pointer to struct from "AssemblerState" type.
+ * The purpose of this function is to read the original file context (.as),
+ * and find macros, in order to create a new output file (.am), in the
+ * output file, the macros will be switched and written as commands.
+ */
+boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *context) {
+
+    char line[MAX_LINE_LENGTH + NUMBER_TWO];
+    char first_word[MAX_LINE_LENGTH + NUMBER_TWO];
     char *line_ptr;
     char *am_file_name;
     FILE *am_file;
 
-    boolean is_inside_macro = FALSE;.
+    boolean is_inside_macro = FALSE;
     macro_ptr macro_head = NULL;
     macro_ptr current_macro = NULL;
     macro_ptr found_macro = NULL;
     int c;
 
 /* Start from line number 1 and set errors found to false.*/
-    context->line_number = 1;
+    context->line_number = NUMBER_ONE;
     context->error_found = FALSE;
 
 /* Create a new output file (.am), then open it. */
-    am_file_name = create_file_name(base_file_name, ".am");
+    am_file_name = create_file_name(*original_name, ".am");
     am_file = fopen(am_file_name, "w");
     if (am_file == NULL) {
         fprintf(stderr, "Error: Cannot create output file %s\n", am_file_name); /* Error text for not being able to open file*/
@@ -69,7 +76,7 @@ boolean pre_assemble(FILE *source_file char *base_file_name, AssemblerContext *c
 
         /* if currently saving a macro stop when you find 'mcroend', then check for extra text after 'mcroend'*/
         if (is_inside_macro) {
-            if (strcmp(first_word, "mcroend") == 0) {
+            if (strcmp(first_word, "mcroend") == NUMBER_ZERO) {
                 skip_whitespaces(&line_ptr);
                 if (*line_ptr != '\0' && *line_ptr != '\n') {
                     fprintf(stderr, "Error at line %d: Extra text after 'mcroend'.\n", context->line_number); /* Error for extra text */
@@ -84,12 +91,12 @@ boolean pre_assemble(FILE *source_file char *base_file_name, AssemblerContext *c
             /* Else - if we are not inside a macro (regular code) */
         } else {
             /* If first word starts with 'mcro' start a new macro*/
-            if (strcmp(first_word, "mcro") == 0) {
-                char macro_name[MAX_LABEL_LENGTH + 2] = {0};
+            if (strcmp(first_word, "mcro") == NUMBER_ZERO) {
+                char macro_name[MAX_LABEL_LENGTH + NUMBER_TWO] = {NUMBER_ZERO};
                 extract_word(&line_ptr, macro_name);
 
                 /* Checks for errors in the macro name */
-                if (macro_name[0] == '\0') {
+                if (macro_name[NUMBER_ZERO] == '\0') {
                     fprintf(stderr, "Error at line %d: Missing macro name.\n", context->line_number);
                     context->error_found = TRUE;
                 } else if (is_reserved_word(macro_name)) {

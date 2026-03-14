@@ -116,7 +116,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                     is_inside_macro = TRUE;
                 }
             }
-                /* If we found a saved macro, write its lines to the file */
+
+            /* If we found a saved macro, write its lines to the file */
             else if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
                 macro_line_node *curr_line = found_macro->lines_head;
                 while (curr_line != NULL) {

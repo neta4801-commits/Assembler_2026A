@@ -39,18 +39,18 @@ boolean is_forbidden_word(char *word) {
 boolean  is_legal_name(char *name) {
     int i=NUMBER_ZERO, name_length;
     /* The word is empty so this isn't a legal name. */
-   if (name == NULL){
-       return FALSE;
-   }
-   name_length = strlen(name);
-   /* This is unlegal name if the length is zero or the length is more than the maximum length. */
+    if (name == NULL){
+        return FALSE;
+    }
+    name_length = strlen(name);
+    /* This is unlegal name if the length is zero or the length is more than the maximum length. */
     if (name_length == NUMBER_ZERO || name_length > MAX_LABEL_LENGTH) {
         return FALSE;
     }
 
     /* We need to check if the first char is a letter. Otherwise, this is unlegal name for label or macro. */
     if( !( (name[NUMBER_ZERO] >= 'a' && name[NUMBER_ZERO]<='z') ||
-    (name[NUMBER_ZERO] >= 'A' && name[NUMBER_ZERO]<='Z') )) {
+           (name[NUMBER_ZERO] >= 'A' && name[NUMBER_ZERO]<='Z') )) {
         return FALSE;
     }
 

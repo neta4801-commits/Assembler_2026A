@@ -30,7 +30,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
     macro_ptr macro_head = NULL;
     macro_ptr current_macro = NULL;
     macro_ptr found_macro = NULL;
-    int c;
+    int current_char;
 
 /* Start from line number 1 and set errors found to false.*/
     context->line_number = NUMBER_ONE;
@@ -54,7 +54,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
             context->error_found = TRUE;
 
             /* Clean the rest from buffer*/
-            while ((c = fgetc(source_file)) != '\n' && c != EOF);
+            while ((current_char = fgetc(source_file)) != '\n' && current_char != EOF);
             context->line_number++;
             continue;
         }
@@ -117,7 +117,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 }
             }
 
-            /* If we found a saved macro, write its lines to the file */
+                /* If we found a saved macro, write its lines to the file */
             else if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
                 macro_line_node *curr_line = found_macro->lines_head;
                 while (curr_line != NULL) {

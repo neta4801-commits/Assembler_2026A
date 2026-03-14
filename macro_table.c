@@ -37,7 +37,7 @@ void add_macro_line(macro_ptr current_macro,  char *macro_line) {
 
     /* copies the context macro line to the list of lines including '\n'. */
     strncpy(new_macro_line->line, macro_line, MAX_LINE_LENGTH + NUMBER_ONE);
-    new_macro_line->macro_line[MAX_LINE_LENGTH + NUMBER_ONE] = '\0';
+    new_macro_line->line[MAX_LINE_LENGTH + NUMBER_ONE] = '\0';
     new_macro_line->next = NULL;
 
     /* This is our fist line in this macro. */
@@ -48,8 +48,8 @@ void add_macro_line(macro_ptr current_macro,  char *macro_line) {
 
     /* adds a new line to our list of lines for this macro. */
     else {
-        current_macro->lines_tail->next = new_line;
-        current_macro->lines_tail = new_line;
+        current_macro->lines_tail->next = new_macro_line;
+        current_macro->lines_tail = new_macro_line;
     }
 }
 
@@ -67,7 +67,7 @@ macro_ptr add_macro(macro_ptr *head,  char *macro_name) {
 
     new_macro = (macro_ptr)check_malloc(sizeof(macro_node));
     strncpy(new_macro->macro_name, macro_name, MAX_LABEL_LENGTH);
-    new_macro->name[MAX_LABEL_LENGTH] = '\0';
+    new_macro->macro_name[MAX_LABEL_LENGTH] = '\0';
     new_macro->lines_head = NULL;
     new_macro->lines_tail = NULL;
 

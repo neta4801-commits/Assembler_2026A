@@ -83,12 +83,12 @@ const command_info *get_command(char *command_name) {
 
 /* This function gets a register name and checks (with the function compare()) if this is a legal name for register:
  * if it does, returns true. Otherwise, false. */
-boolean is_register(const char *register_name) {
+boolean is_register(char *register_name) {
     int i;
-    if (name == NULL){
+    if (register_name == NULL){
         return FALSE;
     }
-    for (i = NUMBER_ZERO; i < NUM_REGISTERS; i++) {
+    for (i = NUMBER_ZERO; i < LENGTH_FOR_REGISTERS; i++) {
         if (strcmp(registers_table[i], register_name) == 0) {
             return TRUE;
         }

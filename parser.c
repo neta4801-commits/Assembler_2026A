@@ -1,4 +1,4 @@
-//This file checks legal words, macros and labels according to project instructions.
+/*This file checks legal words, macros and labels according to project instructions. */
 
 #include <string.h>
 #include <ctype.h>

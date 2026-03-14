@@ -1,4 +1,4 @@
-// /* commands_table header file */
+/* commands_table header file */
 
 #ifndef ASSEMBLER_TABLE_H
 #define ASSEMBLER_TABLE_H

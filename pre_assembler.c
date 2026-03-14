@@ -37,7 +37,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
     context->error_found = FALSE;
 
 /* Create a new output file (.am), then open it. */
-    am_file_name = create_file_name(*original_name, ".am");
+    am_file_name = create_file_name(original_name, ".am");
     am_file = fopen(am_file_name, "w");
     if (am_file == NULL) {
         fprintf(stderr, "Error: Cannot create output file %s\n", am_file_name); /* Error text for not being able to open file*/
@@ -99,7 +99,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 if (macro_name[NUMBER_ZERO] == '\0') {
                     fprintf(stderr, "Error at line %d: Missing macro name.\n", context->line_number);
                     context->error_found = TRUE;
-                } else if (is_reserved_word(macro_name)) {
+                } else if (is_forbidden_word(macro_name)) {
                     fprintf(stderr, "Error at line %d: Macro name '%s' is reserved.\n", context->line_number, macro_name);
                     context->error_found = TRUE;
                 } else if (get_macro(macro_head, macro_name) != NULL) {

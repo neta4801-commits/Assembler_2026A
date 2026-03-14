@@ -27,7 +27,7 @@ boolean is_empty_or_comment(char *line) {
     char *ptr = line;
     if (line == NULL) 
       return TRUE; /* if line is empty returns true  */
-    skip_spaces(&ptr); /* skips all spaces and \t until we reach our first char*/
+    skip_whitespaces(&ptr); /* skips all spaces and \t until we reach our first char*/
     if (*ptr == '\0' || *ptr == '\n' || *ptr == ';') 
       return TRUE; /* return true for comments, newlines, and end of string */
     return FALSE;

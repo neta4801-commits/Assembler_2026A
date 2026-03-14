@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "constats.h"
+#include "constant.h"
 #include "helpers.h"
 #include "pre_assembler.h"
 
@@ -13,13 +13,13 @@ int main (int argc, char *argv[]) {
   int i;
   FILE *source_file;
   char *file_name;
-  AssemblerStatee current_context;
+  AssemblerState current_context;
   
   /* Check if user entered input file names */
   if (argc < NUMBER_TWO) {
-    fprintf(stderr, "Error: no input files provided") 
-        return EXIT_FAILURE;
-    }
+    fprintf(stderr, "Error: no input files provided"); 
+    return EXIT_FAILURE;
+  }
     
  /* create a new file name using argv and ".as" extension, open to read */
     for (i = NUMBER_ONE; i < argc; i++) {
@@ -33,7 +33,7 @@ int main (int argc, char *argv[]) {
         }
 
         /* initializing context, as mentioned above */
-        current_context.ic = INITIAL_IC; 
+        current_context.ic = IC_START; 
         current_context.dc = NUMBER_ZERO;
         current_context.line_number = NUMBER_ONE;
         current_context.error_found = FALSE;

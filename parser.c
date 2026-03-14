@@ -1,22 +1,23 @@
-//This file checks legal words, macros and labels according to project instructions.
+/* This file checks legal words, macros and labels according to project instructions. */
 
 #include <string.h>
 #include <ctype.h>
 #include "parser.h"
-#include "tables.h"
+#include "assembler_tables.h"
 #include "helpers.h"
 
 /* There are words that we can use then as a macro name or label name, for example registers name as a label.
  * This function gets a word from the user's source file code
  * and returns true if this is a word that the user can't use and false otherwise. */
 boolean is_forbidden_word(char *word) {
+
     /* The word is empty so it doesn't forbidden word */
     if (word == NULL) {
         return FALSE;
     }
 
     /* We need to check if the word is a register name or a commend name (forbidden words). */
-    if (is_register(word) || name_command(word) != NULL) {
+    if (is_register(word) || get_command(word) != NULL) {
         return TRUE;
     }
     /* We need to check if the word is one of the words: .data, .string,

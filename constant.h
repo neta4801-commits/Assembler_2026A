@@ -26,7 +26,7 @@ typedef enum {
 
 /* The function enum gives 'A'=0, 'R'=1, 'E'=2 */
 typedef enum {
-    ARE_ֹֹABSOLUTE = 'A',
+    ARE_ABSOLUTE = 'A',
     ARE_RELOCATABLE = 'R',
     ARE_EXTERNAL = 'E'
 } command_type_are;

@@ -53,7 +53,7 @@ static const command_info commands_table[NUM_COMMANDS] = {
         {"stop", OPCODE_STOP, FUNCT_ZERO}
 };
 
-/* registers_table- the const table for our registers according to our instructions project (r0-r9).
+/* registers_table- the const table for our registers according to our instructions project (r0-r7).
  * The table is static because we don't want other files to have access to it. */
 static const char *registers_table[LENGTH_FOR_REGISTERS] = {
         "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"

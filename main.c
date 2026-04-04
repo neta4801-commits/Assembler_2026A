@@ -17,7 +17,7 @@ int main (int argc, char *argv[]) {
   
   /* Check if user entered input file names */
   if (argc < NUMBER_TWO) {
-    fprintf(stderr, "Error: no input files provided"); 
+    fprintf(stderr, "Error: no input files provided. \n");
     return EXIT_FAILURE;
   }
     

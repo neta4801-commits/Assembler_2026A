@@ -1,0 +1,29 @@
+/* Helpers header file */
+
+#ifndef HELPERS_H
+#define HELPERS_H
+
+#include <stddef.h>
+#include "constant.h"
+
+
+void *check_malloc(size_t size);
+/*checks if memory allocation was successful. */
+
+
+void skip_whitespaces(char **str);
+/*skips spaces and '\t'. */
+
+
+boolean is_empty_or_comment(char *line);
+/*returns true if line is empty, or is comment. */
+
+
+char *create_file_name(char *original_name, char *extension);
+/* combines file name with extension to create a full name for a file.
+ * copies the original name of the file to file_name with \0 then concatenate the extension, once it finds \0
+ * ('helpers' + '.h' = 'helpers.h')
+ */
+
+
+#endif

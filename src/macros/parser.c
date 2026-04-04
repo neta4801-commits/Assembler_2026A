@@ -3,8 +3,8 @@
 #include <string.h>
 #include <ctype.h>
 #include "parser.h"
-#include "assembler_tables.h"
-#include "helpers.h"
+#include "../../assembler_tables.h"
+#include "../globals/helpers.h"
 
 /* There are words that we can use then as a macro name or label name, for example registers name as a label.
  * This function gets a word from the user's source file code

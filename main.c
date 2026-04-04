@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "constant.h"
-#include "helpers.h"
+#include "src/globals/constant.h"
+#include "src/globals/helpers.h"
 #include "pre_assembler.h"
 
 /* This function handles some user errors, and will provide output for successful compilation,

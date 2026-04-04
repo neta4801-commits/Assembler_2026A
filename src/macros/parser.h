@@ -3,7 +3,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "constant.h"
+#include "../globals/constant.h"
 
 /* There are words that we can use then as a macro name or label name, for example registers name as a label.
  * This function gets a word from the user's source file code

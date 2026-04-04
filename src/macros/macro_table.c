@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "macro_table.h"
-#include "helpers.h"
+#include "../globals/helpers.h"
 
 /* This function gets a pointer to the head of the macros list and a macro name.
  * The function searches for macros on the list by its name,

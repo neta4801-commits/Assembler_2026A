@@ -7,9 +7,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include "pre_assembler.h"
-#include "macro_table.h"
-#include "parser.h"
-#include "helpers.h"
+#include "src/macros/macro_table.h"
+#include "src/macros/parser.h"
+#include "src/globals/helpers.h"
 
 
 /* We pass the function a pointer to the file, the original name (no extension),

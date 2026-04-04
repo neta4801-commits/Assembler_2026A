@@ -3,7 +3,7 @@
 
 #ifndef MACRO_TABLE_H
 #define MACRO_TABLE_H
-#include "constant.h"
+#include "../globals/constant.h"
 
 
 /* represents a single line from the macro the user was writing (including '\n' and '\0'). */

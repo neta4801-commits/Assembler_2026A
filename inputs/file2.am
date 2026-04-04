@@ -2,28 +2,26 @@
 .entry LIST
 .extern W
 MAIN: add r3, LIST
-LOOP: prn #48
  lea STR, r6
  inc r6
  mov r3, K
+mcroend
+LOOP: prn #48
+GEN_MC
  sub r1, r4
  bne END
- lea STR, r6
- inc r6
- mov r3, K
+ lea STR, r3
+ inc r3
+ mov r4, K
+mcroend
+ GEN_MC
  cmp val1, #-6
  bne %END
  dec K
  jmp %LOOP
- lea STR, r6
- inc r6
- mov r3, K
- lea STR, r3
- inc r3
- mov r4, K
- lea STR, r3
- inc r3
- mov r4, K
+ GEN_MC
+ GEN_MC2
+ GEN_MC2
 END: stop
 STR: .string "abcd"
 LIST: .data 6, -9

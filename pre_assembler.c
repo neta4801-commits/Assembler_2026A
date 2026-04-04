@@ -105,7 +105,11 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 } else if (get_macro(macro_head, macro_name) != NULL) {
                     fprintf(stderr, "Error at line %d: Macro '%s' already defined.\n", context->line_number, macro_name);
                     context->error_found = TRUE;
-                } else {
+                }  else if (!is_legal_name(macro_name)) {
+                    fprintf(stderr, "Error at line %d: Macro name '%s' is invalid.\n", context->line_number,
+                            macro_name);
+                    context->error_found = TRUE;
+                }  else {
                     /* Name is good, and needs saving */
                     skip_whitespaces(&line_ptr);
                     if (*line_ptr != '\0' && *line_ptr != '\n') {

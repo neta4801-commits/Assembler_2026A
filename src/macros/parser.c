@@ -60,10 +60,11 @@ boolean  is_legal_name(char *name) {
 
         /* Checks if the char is a letter or number and if not, return false- unlegal name. */
         if(!( (name[i] >= 'a' && name[i]<='z') ||
-              (name[i] >= 'A' && name[i]<='Z') ) ||
-           (name[i] >= '0' && name[i]<='9') ) {
-            return  FALSE;
+              (name[i] >= 'A' && name[i]<='Z') ||
+              (name[i] >= '0' && name[i]<='9') ) ) {
+            return FALSE;
         }
+
     }
 
     /* Checks if this is not a forbidden word. */

@@ -8,6 +8,7 @@
 #define NUMBER_ZERO 0
 #define NUMBER_ONE 1
 #define NUMBER_TWO 2
+#define NUMBER_FOUR 4
 
 /* Constant values according to course manual. */
 #define MAX_LINE_LENGTH 80
@@ -38,11 +39,18 @@ typedef struct {
     command_type_are are;
 } machine_word;
 
-/* Each command has her own name, opcode and funct. */
+
+
+/* Each command has its own name, opcode, funct, operands and addressing modes. */
 typedef struct {
     char *command_name;
     unsigned int opcode;
     unsigned int funct;
+    /* Each command has a different number of operands (0,1 or 2). */
+    int expected_ops;
+    /* We have four addressing modes, so the array (for the 'source operand' and the 'destination operand') size is four. */
+    int valid_src_operand_types[NUMBER_FOUR];
+    int valid_dest_operand_types[NUMBER_FOUR];
 } command_info;
 
 

@@ -30,28 +30,37 @@
 #define FUNCT_BNE 11
 #define FUNCT_JSR 12
 
+/* The number of operand for each command */
+#define ZERO_OPERANDS 0
+#define ONE_OPERAND 1
+#define TWO_OPERANDS 2
+
 
 /* commands_table- the const table for our commands according to our instructions project.
- * Any command contains information: command name, opcode (in base 10) and funct (in base 10).
+ * Any command contains information: command name, opcode (in base 10), funct (in base 10), number of operand and
+ * types of addressing modes according to instructions project (immediate, direct, relative,  register direct)-
+ * for the 'source operand' and the 'destination operand'.
+ * TRUE= the addressing mode EXISTS and FALSE= the addressing mode NOT EXISTS (TRUE=1, FALSE=0).
  * The table is static because we don't want other files to have access to it. */
 static const command_info commands_table[NUM_COMMANDS] = {
-        {"mov", OPCODE_MOV, FUNCT_ZERO},
-        {"cmp",OPCODE_CMP , FUNCT_ZERO},
-        {"add", OPCODE_GROUP_2, FUNCT_ADD},
-        {"sub", OPCODE_GROUP_2 , FUNCT_SUB},
-        {"lea", OPCODE_LEA, FUNCT_ZERO},
-        {"clr", OPCODE_GROUP_5, FUNCT_CLR},
-        {"not", OPCODE_GROUP_5, FUNCT_NOT},
-        {"inc", OPCODE_GROUP_5, FUNCT_INC},
-        {"dec", OPCODE_GROUP_5, FUNCT_DEC},
-        {"jmp", OPCODE_GROUP_9, FUNCT_JMP},
-        {"bne", OPCODE_GROUP_9, FUNCT_BNE},
-        {"jsr", OPCODE_GROUP_9, FUNCT_JSR},
-        {"red", OPCODE_RED, FUNCT_ZERO},
-        {"prn", OPCODE_PRN, FUNCT_ZERO},
-        {"rts", OPCODE_RTS, FUNCT_ZERO},
-        {"stop", OPCODE_STOP, FUNCT_ZERO}
+        {"mov", OPCODE_MOV, FUNCT_ZERO, TWO_OPERANDS,  {TRUE, TRUE, FALSE, TRUE} , {FALSE, TRUE, FALSE, TRUE} },
+        {"cmp",OPCODE_CMP , FUNCT_ZERO, TWO_OPERANDS, {TRUE, TRUE , FALSE, TRUE} , {TRUE, TRUE, FALSE, TRUE}  },
+        {"add", OPCODE_GROUP_2, FUNCT_ADD, TWO_OPERANDS, {TRUE,  TRUE,  FALSE, TRUE} , {FALSE, TRUE,  FALSE, TRUE}  },
+        {"sub", OPCODE_GROUP_2 , FUNCT_SUB, TWO_OPERANDS, {TRUE,  TRUE,  FALSE, TRUE }, {FALSE, TRUE,  FALSE, TRUE} },
+        {"lea", OPCODE_LEA, FUNCT_ZERO, TWO_OPERANDS, {FALSE, TRUE,  FALSE, FALSE}, {FALSE, TRUE,  FALSE, TRUE} },
+        {"clr", OPCODE_GROUP_5, FUNCT_CLR, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  FALSE, TRUE} },
+        {"not", OPCODE_GROUP_5, FUNCT_NOT, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  FALSE, TRUE} },
+        {"inc", OPCODE_GROUP_5, FUNCT_INC, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  FALSE, TRUE} },
+        {"dec", OPCODE_GROUP_5, FUNCT_DEC, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  FALSE, TRUE} },
+        {"jmp", OPCODE_GROUP_9, FUNCT_JMP, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  TRUE,  FALSE} },
+        {"bne", OPCODE_GROUP_9, FUNCT_BNE, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  TRUE,  FALSE} },
+        {"jsr", OPCODE_GROUP_9, FUNCT_JSR, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  TRUE,  FALSE} },
+        {"red", OPCODE_RED, FUNCT_ZERO, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {FALSE, TRUE,  FALSE, TRUE} },
+        {"prn", OPCODE_PRN, FUNCT_ZERO, ONE_OPERAND, {FALSE, FALSE, FALSE, FALSE}, {TRUE,  TRUE,  FALSE, TRUE} },
+        {"rts", OPCODE_RTS, FUNCT_ZERO, ZERO_OPERANDS, {FALSE, FALSE, FALSE, FALSE}, {FALSE, FALSE, FALSE, FALSE} },
+        {"stop", OPCODE_STOP, FUNCT_ZERO, ZERO_OPERANDS, {FALSE, FALSE, FALSE, FALSE}, {FALSE, FALSE, FALSE, FALSE} }
 };
+
 
 /* registers_table- the const table for our registers according to our instructions project (r0-r7).
  * The table is static because we don't want other files to have access to it. */

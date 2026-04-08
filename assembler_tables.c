@@ -35,16 +35,12 @@
 #define ONE_OPERAND 1
 #define TWO_OPERANDS 2
 
-/* Types of addressing modes according to course manual */
-#define IMMEDIATE 0
-#define DIRECT 1
-#define RELATIVE 2
-#define REGISTER_DIRECT 3
-
-
 
 /* commands_table- the const table for our commands according to our instructions project.
- * Any command contains information: command name, opcode (in base 10) and funct (in base 10).
+ * Any command contains information: command name, opcode (in base 10), funct (in base 10), number of operand and
+ * types of addressing modes according to instructions project (immediate, direct, relative,  register direct)-
+ * for the 'source operand' and the 'destination operand'.
+ * TRUE= the addressing mode EXISTS and FALSE= the addressing mode NOT EXISTS (TRUE=1, FALSE=0).
  * The table is static because we don't want other files to have access to it. */
 static const command_info commands_table[NUM_COMMANDS] = {
         {"mov", OPCODE_MOV, FUNCT_ZERO, TWO_OPERANDS,  {TRUE, TRUE, FALSE, TRUE} , {FALSE, TRUE, FALSE, TRUE} },

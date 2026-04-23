@@ -1,9 +1,7 @@
-/* symbol_table.c file */
+/* This file handles symbols with list */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "helpers.h"
 
 /* This function gets a pointer to the head of the symbol list, and symbol details (name,address and the label type-code,data or extern).

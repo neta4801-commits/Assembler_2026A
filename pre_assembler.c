@@ -1,5 +1,7 @@
 /*
- * קובץ: pre_assembler.c
+ * pre_assembler.c file, this file will be responsible for receiving the input file,
+ * replacing all the macros that were written by the user, and creating
+ * a new output file which will contain the macro commands with the source code.
  */
 #include <stdio.h>
 #include <string.h>
@@ -10,8 +12,15 @@
 #include "src/globals/helpers.h"
 #include "src/globals/constant.h"
 
-
-boolean pre_assemble(FILE *source_file, const char *base_file_name, AssemblerContext *context) {
+/* We pass the function a pointer to the file, the original name (no extension),
+ * and a pointer to struct from "AssemblerState" type.
+ * The purpose of this function is to read the original file context (.as),
+ * and find macros, in order to create a new output file (.am), in the
+ * output file, the macros will be switched and written as commands.
+ * In addition, we are adding labels to our label list,
+ * and check if there are conflicts between label names and maco names.
+ */
+boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *context) {
     //הפלוס 1 זה להורדת שורה /n וגם ל/0.
     char line[MAX_LINE_LENGTH + NUMBER_TWO];
     char first_word[MAX_LINE_LENGTH + NUMBER_TWO];
@@ -27,7 +36,7 @@ boolean pre_assemble(FILE *source_file, const char *base_file_name, AssemblerCon
     macro_ptr macro_head = NULL;
     macro_ptr current_macro = NULL;
     macro_ptr found_macro = NULL;
-    int c;
+    int current_char;
 
     context->line_number = NUMBER_ONE;
     context->error_found = FALSE;
@@ -40,7 +49,7 @@ boolean pre_assemble(FILE *source_file, const char *base_file_name, AssemblerCon
     boolean is_label_conflict; /* To check conflicts with label names like duplicates */
 
     
-    am_file_name = create_file_name(base_file_name, ".am");
+    am_file_name = create_file_name(original_name, ".am");
     am_file = fopen(am_file_name, "w");
     if (am_file == NULL) {
         fprintf(stderr, "Error: Cannot create output file %s\n", am_file_name);
@@ -55,7 +64,7 @@ boolean pre_assemble(FILE *source_file, const char *base_file_name, AssemblerCon
             context->error_found = TRUE;
             //אם המשתמש הכניס יותר ממקסימום התווים הנדרשים, צריך לנקות את השורות ולחפש איפה נמצאת הירידת שורה כדי לעבור לשורה הבאה.
             //עד שהקובץ מסתיים כמובן
-            while ((c = fgetc(source_file)) != '\n' && c != EOF);
+            while ((current_char = fgetc(source_file)) != '\n' && current_char != EOF);
             context->line_number++;
             continue;
         }

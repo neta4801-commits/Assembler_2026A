@@ -8,6 +8,7 @@
 #define NUMBER_ZERO 0
 #define NUMBER_ONE 1
 #define NUMBER_TWO 2
+#define NUMBER_THREE 3
 #define NUMBER_FOUR 4
 
 /* Constant values according to course manual. */
@@ -17,6 +18,15 @@
 #define MEMORY_SIZE 4096
 #define IC_START 100
 #define NUM_COMMANDS 16
+
+/* Addressing mode */
+#define IMMEDIATE_MODE 0
+#define DIRECT_MODE 1
+#define RELATIVE_MODE 2
+#define REGISTER_DIRECT_MODE 3
+/* If we don't have a source or a destination operand for the command. */
+#define  MISSING_OPERAND -1
+
 
 
 typedef enum {

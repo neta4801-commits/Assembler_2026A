@@ -80,4 +80,9 @@ typedef struct {
     symbol_ptr symbol_head;
 } AssemblerState;
 
+typedef struct label_node {
+    char label_name[MAX_LABEL_LENGTH + NUMBER_ONE];
+    struct label_node *next;
+} label_node;
+
 #endif

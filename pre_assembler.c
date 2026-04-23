@@ -1,7 +1,5 @@
 /*
- * pre_assembler.c file, this file will be responsible for receiving the input file,
- * replacing all the macros that were written by the user, and creating
- * a new output file which will contain the macro commands with the source code.
+ * קובץ: pre_assembler.c
  */
 #include <stdio.h>
 #include <string.h>
@@ -10,110 +8,174 @@
 #include "src/macros/macro_table.h"
 #include "src/macros/parser.h"
 #include "src/globals/helpers.h"
+#include "src/globals/constant.h"
 
 
-/* We pass the function a pointer to the file, the original name (no extension),
- * and a pointer to struct from "AssemblerState" type.
- * The purpose of this function is to read the original file context (.as),
- * and find macros, in order to create a new output file (.am), in the
- * output file, the macros will be switched and written as commands.
- */
-boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *context) {
-
+boolean pre_assemble(FILE *source_file, const char *base_file_name, AssemblerContext *context) {
+    //הפלוס 1 זה להורדת שורה /n וגם ל/0.
     char line[MAX_LINE_LENGTH + NUMBER_TWO];
     char first_word[MAX_LINE_LENGTH + NUMBER_TWO];
     char *line_ptr;
     char *am_file_name;
     FILE *am_file;
+    char *temp_ptr;
+    char second_word[MAX_LINE_LENGTH];
+    char macro_name[MAX_LABEL_LENGTH + NUMBER_TWO];
+    macro_line_node *curr_line;
 
     boolean is_inside_macro = FALSE;
     macro_ptr macro_head = NULL;
     macro_ptr current_macro = NULL;
     macro_ptr found_macro = NULL;
-    int current_char;
+    int c;
 
-/* Start from line number 1 and set errors found to false.*/
     context->line_number = NUMBER_ONE;
     context->error_found = FALSE;
 
-/* Create a new output file (.am), then open it. */
-    am_file_name = create_file_name(original_name, ".am");
+    label_ptr label_head = NULL;
+    label_ptr current_label = NULL;
+    label_ptr new_label = NULL; /* To create new label nodes */
+    label_ptr next_label = NULL; /* To free label nodes at the end */
+    char temp_label[MAX_LABEL_LENGTH + NUMBER_ONE]; /* To check duplicate labels  */
+    boolean is_label_conflict; /* To check conflicts with label names like duplicates */
+
+    
+    am_file_name = create_file_name(base_file_name, ".am");
     am_file = fopen(am_file_name, "w");
     if (am_file == NULL) {
-        fprintf(stderr, "Error: Cannot create output file %s\n", am_file_name); /* Error text for not being able to open file*/
+        fprintf(stderr, "Error: Cannot create output file %s\n", am_file_name);
         free(am_file_name);
         return FALSE;
     }
 
-/* Reads each line in the file */
     while (fgets(line, sizeof(line), source_file) != NULL) {
-
-        /* Check if the line is too long*/
+        //גודל השורה המקסימלי שהוגדר הוא 80 תווים ולכן הוא מחפש רק ב80 תווים הראשונים.
         if (strchr(line, '\n') == NULL && !feof(source_file)) {
-            fprintf(stderr, "Error at line %d: Line exceeds max length.\n", context->line_number); /* Error text for exceeding max length*/
+            fprintf(stderr, "Error at line %d: Line exceeds max length.\n", context->line_number);
             context->error_found = TRUE;
-
-            /* Clean the rest from buffer*/
-            while ((current_char = fgetc(source_file)) != '\n' && current_char != EOF);
+            //אם המשתמש הכניס יותר ממקסימום התווים הנדרשים, צריך לנקות את השורות ולחפש איפה נמצאת הירידת שורה כדי לעבור לשורה הבאה.
+            //עד שהקובץ מסתיים כמובן
+            while ((c = fgetc(source_file)) != '\n' && c != EOF);
             context->line_number++;
             continue;
         }
+
         line_ptr = line;
 
-        /* Using helper function to handle empty lines and comments*/
+        //הוספת שורות הערה שבתוך מאקרויים (אם המאקרו קיים)
         if (is_empty_or_comment(line_ptr)) {
+            //  לפי הההערות לא נדרש כי זו שורת הערה- לוודא כי יש מצב אפשר למחוק את תהנאי ולא להוסיף את השורה למאקרו.
             if (is_inside_macro) {
-                add_macro_line(current_macro, line);
-            } else {
-                fputs(line, am_file);
+                if (current_macro != NULL) add_macro_line(current_macro, line);
             }
+            /* לא מדפיסים כלום! פשוט מדלגים לשורה הבאה */
             context->line_number++;
             continue;
         }
-
-        /* first word of the line*/
+        // הוצאת המילה הראשונה בשורה שאנחנו עומדים עליה
         extract_word(&line_ptr, first_word);
 
-        /* if currently saving a macro stop when you find 'mcroend', then check for extra text after 'mcroend'*/
+        /* --- טיפול בתוך בלוק של מאקרו --- */
         if (is_inside_macro) {
+            //מאקרו לא תקין- טקסט אחרי macroend
             if (strcmp(first_word, "mcroend") == NUMBER_ZERO) {
                 skip_whitespaces(&line_ptr);
                 if (*line_ptr != '\0' && *line_ptr != '\n') {
-                    fprintf(stderr, "Error at line %d: Extra text after 'mcroend'.\n", context->line_number); /* Error for extra text */
+                    fprintf(stderr, "Error at line %d: Extraneous text after 'mcroend'.\n", context->line_number);
                     context->error_found = TRUE;
                 }
                 is_inside_macro = FALSE;
                 current_macro = NULL;
+
+            //הדפסת השורה במאקרו
             } else {
-                add_macro_line(current_macro, line);
+                /* נכנס לכאן גם אם המאקרו תקין וגם אם הוא בסטטוס "התאוששות משגיאה" */
+                if (current_macro != NULL) {
+                    add_macro_line(current_macro, line);
+                }
+            }
+        }
+            /* --- טיפול מחוץ למאקרו (קוד רגיל) --- */
+        else {
+            temp_ptr = line_ptr;
+            memset(second_word, NUMBER_ZERO, sizeof(second_word));
+            /*
+            //אפשר לכתוב במקטם memset את הלולאה הזו לאתחול המערך הזה.
+             //רק צריך לשים לב שהint i מחוץ לבלוק ובתחילת התוכנית איפשה שמכריזים על משתנים.
+             * int i;
+               for (i = 0; i < sizeof(second_word); i++) {
+                    second_word[i] = '\0';
+}
+             */
+            // הוצאת המילה השנייה- אחרי שתיגמר ישארו '/0'
+            extract_word(&temp_ptr, second_word);
+
+            /* זיהוי זבל לפני הצהרת מאקרו- אם במילה השנייה רק יש את המילה מאקרו במילה הראשונה היה "זבל" */
+            if (strcmp(second_word, "mcro") == NUMBER_ZERO) {
+                fprintf(stderr, "Error at line %d: Extraneous text or label ('%s') before 'mcro'.\n", context->line_number, first_word);
+                context->error_found = TRUE;
+                is_inside_macro = TRUE; /* טריק התאוששות: נכנסים כדי לבלוע את ההמשך */
+                current_macro = NULL;
+                context->line_number++;
+                continue;
             }
 
-            /* Else - if we are not inside a macro (regular code) */
-        } else {
-            /* If first word starts with 'mcro' start a new macro*/
+            //הוצאת המילה הראשונה- הכרזת מאקרו.
             if (strcmp(first_word, "mcro") == NUMBER_ZERO) {
-                char macro_name[MAX_LABEL_LENGTH + NUMBER_TWO] = {NUMBER_ZERO};
+                memset(macro_name, NUMBER_ZERO, sizeof(macro_name));
+                is_label_conflict = FALSE;
+                // הואצת השם של מאקרו לmacro_name. מצביע על המילה השנייה כי בפונקציה המצביע לשורה התקדם בפעם האחרונה שהשתמשנו בו.
                 extract_word(&line_ptr, macro_name);
 
-                /* Checks for errors in the macro name */
+                /* בדיקה בפנקס התוויות שלנו */
+                //אם המילה הזו היא שם של תווית.
+              current_label = label_head;
+              while (current_label != NULL) {
+                  if (strcmp(current_label->label_name, macro_name) == NUMBER_ZERO) {
+                      is_label_conflict = TRUE;
+                      break;
+                  }
+                  current_label = current_label->next;
+                }
+                
+
+
+                // בדיקת שיגאות לשם המאקרו בקוד.
+
+                //אין שם למאקרו
                 if (macro_name[NUMBER_ZERO] == '\0') {
                     fprintf(stderr, "Error at line %d: Missing macro name.\n", context->line_number);
                     context->error_found = TRUE;
-                } else if (is_forbidden_word(macro_name)) {
+                    is_inside_macro = TRUE;
+                    current_macro = NULL; /* התאוששות */ }
+
+                //השם של המאקרו הוא מילה שמורה- למשל שם של פקודה.
+                else if (is_reserved_word(macro_name)) {
                     fprintf(stderr, "Error at line %d: Macro name '%s' is reserved.\n", context->line_number, macro_name);
                     context->error_found = TRUE;
-                } else if (get_macro(macro_head, macro_name) != NULL) {
+                    is_inside_macro = TRUE;
+                    current_macro = NULL; /* התאוששות */ }
+
+                //אם כבר בטבלת המאקרוים קיים מאקרו אחר עם השם הזה, לא ניתן להגדיר את המאקרו הנוכחי.
+                else if (get_macro(macro_head, macro_name) != NULL) {
                     fprintf(stderr, "Error at line %d: Macro '%s' already defined.\n", context->line_number, macro_name);
                     context->error_found = TRUE;
-                }  else if (!is_legal_name(macro_name)) {
-                    fprintf(stderr, "Error at line %d: Macro name '%s' is invalid.\n", context->line_number,
-                            macro_name);
+                    is_inside_macro = TRUE;
+                    current_macro = NULL; /* התאוששות */ }
+
+                //אם שם המאקרו זהה לשם של תווית.
+                else if (is_label_conflict) {
+                    fprintf(stderr, "Error at line %d: Macro name '%s' cannot be identical to an already defined label.\n", context->line_number, macro_name);
                     context->error_found = TRUE;
-                }  else {
-                    /* Name is good, and needs saving */
+                    is_inside_macro = TRUE;
+                    current_macro = NULL; /* התאוששות */ }
+
+                //המאקרו חוקי.
+                else {
+                    /* המאקרו חוקי! נבדוק רק שאין זבל בסוף השורה */
                     skip_whitespaces(&line_ptr);
                     if (*line_ptr != '\0' && *line_ptr != '\n') {
-                        fprintf(stderr, "Error at line %d: Extraneous text.\n", context->line_number);
+                        fprintf(stderr, "Error at line %d: Extraneous text after macro name.\n", context->line_number);
                         context->error_found = TRUE;
                     }
                     current_macro = add_macro(&macro_head, macro_name);
@@ -121,27 +183,66 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 }
             }
 
-                /* If we found a saved macro, write its lines to the file */
-            else if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
-                macro_line_node *curr_line = found_macro->lines_head;
-                while (curr_line != NULL) {
-                    fputs(curr_line->line, am_file);
-                    curr_line = curr_line->next;
-                }
+            //בדיקה עבור השורה עם סיום המאקרו אבל כשהדגל של is_inside_macro הוא false. לכן זו שגיאה כי סגרנו מאקרו מבלי לפתוח.
+                /* mcroend ללא פתיחה */
+            else if (strcmp(first_word, "mcroend") == NUMBER_ZERO) {
+                fprintf(stderr, "Error at line %d: 'mcroend' encountered without matching 'mcro'.\n", context->line_number);
+                context->error_found = TRUE;
             }
-                /* Not a macro, write the regular code to file */
+
+                /* קוד רגיל או תווית */
             else {
-                fputs(line, am_file);
+                /* אם זו תווית, נשמור אותה בפנקס שלנו */
+                if (strlen(first_word) > NUMBER_ZERO && first_word[strlen(first_word) - NUMBER_ONE] == ':') {
+                    strncpy(temp_label, first_word, strlen(first_word) - NUMBER_ONE);
+                    temp_label[strlen(first_word) - NUMBER_ONE] = '\0';
+
+                    //הוכרז מאקרו עם השם הזה לכן לא יכולה להיו תווית עם אותו השם.
+                    if (get_macro(macro_head, temp_label) != NULL) {
+                        fprintf(stderr, "Error at line %d: Label name '%s' cannot be identical to a defined macro name.\n", context->line_number, temp_label);
+                        context->error_found = TRUE;
+                    }
+                    /* Memory allocation for the new label */
+                    else {
+                        new_label = check_malloc(sizeof(label_node));
+                        strcpy(new_label->label_name, temp_label);
+                        new_label->next = label_head;
+                        label_head = new_label;
+                    }
+
+                }
+
+                /* פריסת המאקרו אם נקרא (ורק אם הוא חוקי ונשמר) */
+                //הדפסת שורות המאקרויים החוקיים
+                if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
+                    curr_line = found_macro->lines;
+                    while (curr_line != NULL) {
+                        fputs(curr_line->line, am_file);
+                        curr_line = curr_line->next;
+                    }
+                }
+                // שורת קוד רגילה ולא מאקרו ולכן תיכתב בקובץ כרגיל.
+                // לבדוק האם הערות עם ; בסוף נכתבות גם- ואם כן לבדוק בהנחיות אם צריך שיכתבו או לא.
+                else {
+                    fputs(line, am_file);
+                }
             }
         }
         context->line_number++;
     }
-    /* Close the file, and free memory*/
+
     fclose(am_file);
     free(am_file_name);
     free_macro_table(macro_head);
 
-    /* Return true if there were no errors*/
+   /* Free the labels linked list */
+    current_label = label_head;
+    while (current_label != NULL) {
+        next_label = current_label->next;
+        free(current_label);
+        current_label = next_label;
+    }
+    
     return !context->error_found;
 }
 

@@ -215,7 +215,7 @@ boolean pre_assemble(FILE *source_file, const char *base_file_name, AssemblerCon
                 /* פריסת המאקרו אם נקרא (ורק אם הוא חוקי ונשמר) */
                 //הדפסת שורות המאקרויים החוקיים
                 if ((found_macro = get_macro(macro_head, first_word)) != NULL) {
-                    curr_line = found_macro->lines;
+                    curr_line = found_macro->lines_head;
                     while (curr_line != NULL) {
                         fputs(curr_line->line, am_file);
                         curr_line = curr_line->next;

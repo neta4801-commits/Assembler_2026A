@@ -85,4 +85,6 @@ typedef struct label_node {
     struct label_node *next;
 } label_node;
 
+typedef label_node *label_ptr;
+
 #endif

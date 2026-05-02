@@ -28,6 +28,10 @@ boolean is_label(char *word);
  * The function returns true if it does. Otherwise, false. */
 boolean is_legal_number(char *str);
 
+/* This function checks if a given number fits within a 12-bit signed integer range
+ * (from -2048 to 2047). Returns true if it does, false otherwise. */
+boolean is_number_range(int num);
+
 /* This function gets a string from the word that we extracted,
  * and checks if this is a legal string - start with " and end with ".
  * The function returns true if it does. Otherwise, false. */
@@ -35,10 +39,10 @@ boolean is_legal_string(char *str);
 
 /* This function checks if the addressing mode for the command is  legal.
  * If it does, return true. Otherwise, false. */
-boolean is_valid_addressing_mode(int modes[], int mode);
+boolean is_valid_addressing_mode(const int modes[], int mode);
 
 /* This function gets an operand from command and checks the addressing mode for him and returns it. */
-boolean get_addressing_mode(char *operand);
+int get_addressing_mode(char *operand);
 
 
 /* Functions that help us with the first pass */

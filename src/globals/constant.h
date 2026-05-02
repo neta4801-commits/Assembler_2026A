@@ -10,6 +10,7 @@
 #define NUMBER_TWO 2
 #define NUMBER_THREE 3
 #define NUMBER_FOUR 4
+#define NUMBER_MINUS_ONE -1
 
 /* Constant values according to course manual. */
 #define MAX_LINE_LENGTH 80
@@ -27,19 +28,26 @@
 /* If we don't have a source or a destination operand for the command. */
 #define  MISSING_OPERAND -1
 
+/* the bits position for machine word for each command's fields (opcode,funct, addressing modes for source operand).
+ * for destination operand, the addressing modes are in the right place (the end of the word). */
+#define OPCODE_PLACE 8
+#define  FUNCT_PLACE 4
+#define SRC_ADDRESSING_MODE_PLACE 2
 
 
 typedef enum {
-    FALSE = 0,
-    TRUE = 1
+    FALSE = NUMBER_ZERO,
+    TRUE = NUMBER_ONE
 } boolean;
 
 
-/* The function enum gives 'A'=0, 'R'=1, 'E'=2 */
+/* gives 'A','R','E' types for commands.
+ * ARE_NOT_DEFINE_YET= we don't know yet the command type. we will know it later. */
 typedef enum {
     ARE_ABSOLUTE = 'A',
     ARE_RELOCATABLE = 'R',
-    ARE_EXTERNAL = 'E'
+    ARE_EXTERNAL = 'E',
+    ARE_NOT_DEFINE_YET ='0'
 } command_type_are;
 
 /* value - Each machine word is 12 bits so we use short (16 bits) to store the commands machine code.

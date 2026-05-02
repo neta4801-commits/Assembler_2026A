@@ -7,6 +7,9 @@
 #include "../../assembler_tables.h"
 #include "../globals/helpers.h"
 
+#define RANG_MIN_NUM -2048
+#define  RANGE_MAX_NUM 2047
+
 
 /* There are words that we can use then as a macro name or label name, for example registers name as a label.
  * This function gets a word from the user's source file code
@@ -149,10 +152,19 @@ boolean is_legal_number(char *str) {
     return TRUE;
 }
 
+/* This function checks if a given number fits within a 12-bit signed integer range
+ * (from -2048 to 2047). Returns true if it does, false otherwise. */
+boolean is_number_range(int num) {
+    if (num >= -2048 && num <= 2047) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 
 /* This function checks if the addressing mode for the command is  legal.
  * If it does, return true. Otherwise, false. */
-boolean is_valid_addressing_mode(int modes[], int mode) {
+boolean is_valid_addressing_mode(const int modes[], int mode) {
     /* We need to check if we get a legal addressing mode. */
     if (mode < NUMBER_ZERO || mode > NUMBER_THREE) {
         return FALSE;
@@ -167,7 +179,7 @@ boolean is_valid_addressing_mode(int modes[], int mode) {
  * Returns the addressing mode for him:
  * immediate mode (0) ,direct mode (1), relative mode (2), register direct mode (3).
  * If we don't have a source or a destination operand for the command we return -1. */
-boolean get_addressing_mode(char *operand) {
+int get_addressing_mode(char *operand) {
     if(operand == NULL || *operand =='\0') {
         return MISSING_OPERAND;
     }
@@ -183,7 +195,7 @@ boolean get_addressing_mode(char *operand) {
     return DIRECT_MODE;
 }
 
-/* This function extract the string and put it in the data array- data_image (if the string is legal).
+/* This function extract the string, put it in the data array- data_image (if the string is legal) and update dc.
  * If we have extra text or missing quote we print error to the user and return false, otherwise, true. */
 boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     skip_whitespaces(line_ptr);
@@ -251,11 +263,13 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     return TRUE;
 }
 
-/* This function extract the data (from the .data sentence) and put it in the data array- data_image (if the data is legal).
+/* This function extract the data (from the .data sentence)
+ * and put it in the data array- data_image (if the data is legal) and update dc.
  * If we are missing number or aren't putting ',' between numbers,
  * we print error to the user and return false. Otherwise, true. */
 boolean extract_data(char **line_ptr,  AssemblerState *state) {
     char num_str[MAX_LINE_LENGTH];
+    int num_value;
     /* There is at least one number in data sentence. */
     boolean expect_number = TRUE;
 
@@ -307,7 +321,10 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
                 state->error_found = TRUE;
                 return FALSE;
             }
-
+            num_value=atoi(num_str);
+            if(!is_number_range(num_value)) {
+                fprintf(stderr, "Error line %d: Number '%s' is out of the 12 bit range for number in .data\n", state->line_number, num_value);
+            }
 
             /*  We put the number on the data_image- each number is a new word in data_image.
              * so dc has to advance by one for each number.

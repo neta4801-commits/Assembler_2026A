@@ -1,9 +1,7 @@
-//
-// Created by Neta Cohen on 02/05/2026.
-//
+/* The heder file for first pass */
 
-#ifndef ASSEMBLER_2026A_FIRST_PASS_H
-#define ASSEMBLER_2026A_FIRST_PASS_H
+#ifndef FIRST_PASS_H
+#define FIRST_PASS_H
 
 #include <stdio.h>
 #include "src/globals/constant.h"

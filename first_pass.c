@@ -284,7 +284,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
         state->line_number++;
     }
 
-    /* We need to move dc to start after the end of ic. */
+    /* We need to move dc to the start after the end of ic. */
     current_symbol = state->symbol_head;
     while (current_symbol) {
         if (current_symbol->is_data) {

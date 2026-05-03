@@ -18,7 +18,7 @@
  * and find macros, in order to create a new output file (.am), in the
  * output file, the macros will be switched and written as commands.
  * In addition, we are adding labels to our label list,
- * and check if there are conflicts between label names and maco names.
+ * and check if there are conflicts between label names and marco names.
  */
 boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *context) {
 

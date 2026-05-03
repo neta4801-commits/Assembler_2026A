@@ -20,7 +20,7 @@
  * In addition, we are adding labels to our label list,
  * and check if there are conflicts between label names and marco names.
  */
-boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *context) {
+boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *state) {
 
      /* +2 for newline and null terminator */
     char line[MAX_LINE_LENGTH + NUMBER_TWO];
@@ -39,8 +39,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
     macro_ptr found_macro = NULL;
     int current_char, index;
 
-    context->line_number = NUMBER_ONE;
-    context->error_found = FALSE;
+    state->line_number = NUMBER_ONE;
+    state->error_found = FALSE;
 
     label_ptr label_head = NULL;
     label_ptr current_label = NULL;
@@ -61,11 +61,11 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
     while (fgets(line, sizeof(line), source_file) != NULL) {
         /* Check for line length (the maximum allowed is 80 characters) and avoid false error at the end of file */
         if (strchr(line, '\n') == NULL && !feof(source_file)) {
-            fprintf(stderr, "Error at line %d: Line exceeds max length.\n", context->line_number);
-            context->error_found = TRUE;
+            fprintf(stderr, "Error at line %d: Line exceeds max length.\n", state->line_number);
+            state->error_found = TRUE;
             /* Skip the rest of the line if it exceeds the maximum length until newline or EOF is found */
             while ((current_char = fgetc(source_file)) != '\n' && current_char != EOF);
-            context->line_number++;
+            state->line_number++;
             continue;
         }
 
@@ -79,7 +79,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 }
             }
             /* Skip the line if it is empty or a comment */
-            context->line_number++;
+            state->line_number++;
             continue;
         }
 
@@ -91,8 +91,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 skip_whitespaces(&line_ptr);
                 /*check for extraneous text after macroend */
                 if (*line_ptr != '\0' && *line_ptr != '\n') {
-                    fprintf(stderr, "Error at line %d: Extraneous text after 'mcroend'.\n", context->line_number);
-                    context->error_found = TRUE;
+                    fprintf(stderr, "Error at line %d: Extraneous text after 'mcroend'.\n", state->line_number);
+                    state->error_found = TRUE;
                 }
                 is_inside_macro = FALSE;
                 current_macro = NULL;
@@ -108,19 +108,19 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
         /* not inside macro, check for macro definition or regular line of code */
         else {
             temp_ptr = line_ptr;
-            for (index = NUMBER_ZERO; i < sizeof(second_word); i++) {
-                second_word[i] = '\0';
+            for (index = NUMBER_ZERO; index < sizeof(second_word); index++) {
+                second_word[index] = '\0';
             }
 
             extract_word(&temp_ptr, second_word);
 
             /*indetify unnecessary text if the second word is "macro"*/
             if (strcmp(second_word, "mcro") == NUMBER_ZERO) {
-                fprintf(stderr, "Error at line %d: Extraneous text or label ('%s') before 'mcro'.\n", context->line_number, first_word);
-                context->error_found = TRUE;
+                fprintf(stderr, "Error at line %d: Extraneous text or label ('%s') before 'mcro'.\n", state->line_number, first_word);
+                state->error_found = TRUE;
                 is_inside_macro = TRUE; /*until we find a valid macroend, keep the macro flag on, skipping uneccessary lines*/
                 current_macro = NULL;
-                context->line_number++;
+                state->line_number++;
                 continue;
             }
 
@@ -145,32 +145,32 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
 
                 /* validate the macro name */
                 if (macro_name[NUMBER_ZERO] == '\0') {
-                    fprintf(stderr, "Error at line %d: Missing macro name.\n", context->line_number);
-                    context->error_found = TRUE;
+                    fprintf(stderr, "Error at line %d: Missing macro name.\n", state->line_number);
+                    state->error_found = TRUE;
                     is_inside_macro = TRUE;
                     current_macro = NULL;
                 }
 
                 /* check if the macro name is a reserved word */
                 else if (is_reserved_word(macro_name)) {
-                    fprintf(stderr, "Error at line %d: macro name '%s' is reserved.\n", context->line_number, macro_name);
-                    context->error_found = TRUE;
+                    fprintf(stderr, "Error at line %d: macro name '%s' is reserved.\n", state->line_number, macro_name);
+                    state->error_found = TRUE;
                     is_inside_macro = TRUE;
                     current_macro = NULL;
                 }
 
                 /* check if the macro name is already defined as a macro */
                 else if (get_macro(macro_head, macro_name) != NULL) {
-                    fprintf(stderr, "Error at line %d: Macro '%s' already defined.\n", context->line_number, macro_name);
-                    context->error_found = TRUE;
+                    fprintf(stderr, "Error at line %d: Macro '%s' already defined.\n", state->line_number, macro_name);
+                    state->error_found = TRUE;
                     is_inside_macro = TRUE;
                     current_macro = NULL;
                  }
 
                  /* check if the macro name is already defined as a label */
                  else if (is_label_conflict) {
-                    fprintf(stderr, "Error at line %d: Macro name '%s' cannot be identical to an already defined label.\n", context->line_number, macro_name);
-                    context->error_found = TRUE;
+                    fprintf(stderr, "Error at line %d: Macro name '%s' cannot be identical to an already defined label.\n", state->line_number, macro_name);
+                    state->error_found = TRUE;
                     is_inside_macro = TRUE;
                     current_macro = NULL; /* התאוששות */ }
 
@@ -179,8 +179,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                     /* check for extraneous text after the macro name */
                     skip_whitespaces(&line_ptr);
                     if (*line_ptr != '\0' && *line_ptr != '\n') {
-                        fprintf(stderr, "Error at line %d: Extraneous text after macro name.\n", context->line_number);
-                        context->error_found = TRUE;
+                        fprintf(stderr, "Error at line %d: Extraneous text after macro name.\n", state->line_number);
+                        state->error_found = TRUE;
                     }
                     current_macro = add_macro(&macro_head, macro_name);
                     is_inside_macro = TRUE;
@@ -189,8 +189,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
 
             /* check for macroend without a matching macro */
             else if (strcmp(first_word, "mcroend") == NUMBER_ZERO) {
-                fprintf(stderr, "Error at line %d: 'mcroend' encountered without matching 'mcro'.\n", context->line_number);
-                context->error_found = TRUE;
+                fprintf(stderr, "Error at line %d: 'mcroend' encountered without matching 'mcro'.\n", state->line_number);
+                state->error_found = TRUE;
             }
 
             /* not a macro */
@@ -202,8 +202,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
 
                     /* Validate the label name */
                     if (get_macro(macro_head, temp_label) != NULL) {
-                        fprintf(stderr, "Error at line %d: Label name '%s' cannot be identical to a defined macro name.\n", context->line_number, temp_label);
-                        context->error_found = TRUE;
+                        fprintf(stderr, "Error at line %d: Label name '%s' cannot be identical to a defined macro name.\n", state->line_number, temp_label);
+                        state->error_found = TRUE;
                     }
                     /* Memory allocation for the new label */
                     else {
@@ -229,7 +229,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
                 }
             }
         }
-        context->line_number++;
+        state->line_number++;
     }
 
     fclose(am_file);
@@ -244,6 +244,6 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *con
         current_label = next_label;
     }
     
-    return !context->error_found;
+    return !state->error_found;
 }
 

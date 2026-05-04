@@ -172,7 +172,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
                     fprintf(stderr, "Error at line %d: Macro name '%s' cannot be identical to an already defined label.\n", state->line_number, macro_name);
                     state->error_found = TRUE;
                     is_inside_macro = TRUE;
-                    current_macro = NULL; /* התאוששות */ }
+                    current_macro = NULL;
+                 }
 
                     /*macro is valid*/
                     else {

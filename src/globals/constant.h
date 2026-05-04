@@ -86,6 +86,16 @@ typedef struct symbol_node {
 /* A pointer to the symbol list. */
 typedef symbol_node *symbol_ptr;
 
+/* Represents a single usage of an external symbol in code image. */
+typedef struct extern_node {
+    char name[MAX_LABEL_LENGTH + NUMBER_ONE];
+    int address;
+    struct extern_node *next;
+} extern_node;
+
+/* A pointer to the extern-usage list. */
+typedef extern_node *extern_ptr;
+
 /* Manages current state of the assembly process,
  * track IC/DC, store machine code and data, manages the symbol table and flags for errors. */
 typedef struct {

@@ -49,7 +49,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     char temp_label[MAX_LABEL_LENGTH + NUMBER_ONE]; /* To check duplicate labels  */
     boolean is_label_conflict; /* To check conflicts with label names like duplicates */
 
-    
+    /* create the am file name and open it for writing */
     am_file_name = create_file_name(original_name, ".am");
     am_file = fopen(am_file_name, "w");
     if (am_file == NULL) {

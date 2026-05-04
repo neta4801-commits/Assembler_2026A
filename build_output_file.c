@@ -36,11 +36,11 @@ void build_output_files(char *original_name, AssemblerState *state, extern_ptr e
     if (ob_file) {
         fprintf(ob_file, "  %d %d\n", state->ic - IC_START, state->dc);
 
-        for (index = NUMBER_ZERO; index < state->ic - INITIAL_IC; index++) {
+        for (index = NUMBER_ZERO; index < state->ic - IC_START; index++) {
             print_machine_word(ob_file, IC_START + index, state->code_image[index]);
         }
 
-        for (index = NUMBER_ZERO; index < context->dc; index++) {
+        for (index = NUMBER_ZERO; index < state->dc; index++) {
             print_machine_word(ob_file, state->ic + index, state->data_image[index]);
         }
 
@@ -90,13 +90,13 @@ void build_output_files(char *original_name, AssemblerState *state, extern_ptr e
         extern_name = create_file_name(original_name, ".ext");
         ext_file = fopen(extern_name, "w");
         if (ext_file) {
-            current_extern = ext_list_head;
+            current_extern = extern_head;
             while (current_extern) {
                 fprintf(ext_file, "%s %04d\n", current_extern->name, current_extern->address);
                 current_extern = current_extern->next;
             }
             fclose(ext_file);
         }
-        free(ext_name);
+        free(extern_name);
     }
 }

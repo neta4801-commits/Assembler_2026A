@@ -203,7 +203,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     /* We check if the string start with " before the word.
      * If not, this is error, so we print an alert to the user. */
     if (**line_ptr != '\"') {
-        fprintf(stderr, "Error line %d: Missing opening quote for .string directive\n", ctx->line_number);
+        fprintf(stderr, "Error line %d: Missing opening quote for .string directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -323,7 +323,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
             }
             num_value=atoi(num_str);
             if(!is_number_range(num_value)) {
-                fprintf(stderr, "Error line %d: Number '%s' is out of the 12 bit range for number in .data\n", state->line_number, num_value);
+                fprintf(stderr, "Error line %d: Number '%d' is out of the 12 bit range for number in .data\n", state->line_number, num_value);
             }
 
             /*  We put the number on the data_image- each number is a new word in data_image.
@@ -358,7 +358,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
     if (expected_ops == NUMBER_TWO) {
         /* We put the source operand in the src array char by char. */
         index = NUMBER_ZERO;
-        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n')) {
+        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n') {
             src[index++] = *(*line_ptr)++;
         }
         src[index] = '\0';

@@ -1,6 +1,5 @@
 /* constant header file */
 /* This file includes constants and structs that used in several files  */
-printf("hello world");
 
 #ifndef CONSTANT_H
 #define CONSTANT_H

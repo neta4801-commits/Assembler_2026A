@@ -1,13 +1,13 @@
 /* Main.c, this file will be the main file for our project */
 #include <stdio.h>
 #include <stdlib.h>
-#include "src/globals/constant.h"
-#include "src/globals/helpers.h"
-#include "src/globals/symbol_table.h"
-#include "pre_assembler.h"
-#include "first_pass.h"
-#include "second_pass.h"
-#include "build_output_file.h"
+#include "globals/constant.h"
+#include "globals/helpers.h"
+#include "tables/symbol_table.h"
+#include "passes/pre_assembler.h"
+#include "passes/first_pass.h"
+#include "passes/second_pass.h"
+#include "../outputs/build_output_file.h"
 
 
 /* This function handles some user errors, and will provide output for successful compilation,

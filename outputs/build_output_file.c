@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "build_output_file.h"
-#include "src/globals/helpers.h"
+#include "../src/globals/helpers.h"
 
 /* This function print the machine words (form code image and data image) to the file.
  * the print is according to the project instruction -

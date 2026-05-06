@@ -4,7 +4,7 @@
 #define PRE_ASSEMBLER_H
 
 #include <stdio.h>
-#include "src/globals/constant.h"
+#include "../globals/constant.h"
 
 /* We pass the function a pointer to the file, the original name (no extension),
  * and a pointer to struct from "AssemblerState" type.

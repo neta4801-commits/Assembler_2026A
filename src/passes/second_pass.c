@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "second_pass.h"
-#include "assembler_tables.h"
-#include "src/macros/parser.h"
-#include "src/globals/helpers.h"
-#include "src/globals/symbol_table.h"
-#include "build_output_file.h"
+#include "../tables/assembler_tables.h"
+#include "../globals/parser.h"
+#include "../globals/helpers.h"
+#include "../tables/symbol_table.h"
+#include "../../outputs/build_output_file.h"
 
 typedef struct {
     const command_info *command;
@@ -51,7 +51,7 @@ static boolean extract_word_after_optional_label(char **line_ptr, char *first_wo
     if (is_label(first_word)) {
         extract_word(line_ptr, first_word);
         if (first_word[NUMBER_ZERO] == '\0') {
-            fprintf(stderr, "Error line %d: Label without command or directive.\n", line_number);
+            fprintf(stdout, "Error in line %d: Label without command or directive.\n", line_number);
             return FALSE;
         }
     }
@@ -96,13 +96,13 @@ static boolean validate_immediate_operand(const char *operand, int line_number, 
 
     /* Check if immediate operand starts with '#' */
     if (operand[NUMBER_ZERO] != '#') {
-        fprintf(stderr, "Error line %d: Immediate %s operand must start with '#'.\n", line_number, operand_role);
+        fprintf(stdout, "Error in line %d: Immediate %s operand must start with '#'.\n", line_number, operand_role);
         return FALSE;
     }
 
     /* Check if immediate operand is too long or empty. */
     if (strlen(operand) <= NUMBER_ONE || strlen(operand) >= MAX_LINE_LENGTH + NUMBER_TWO) {
-        fprintf(stderr, "Error line %d: Missing or too long immediate value in %s operand '%s'.\n",
+        fprintf(stdout, "Error in line %d: Missing or too long immediate value in %s operand '%s'.\n",
                 line_number, operand_role, operand);
         return FALSE;
     }
@@ -110,7 +110,7 @@ static boolean validate_immediate_operand(const char *operand, int line_number, 
     /* Copy the number part after '#' for validation. */
     strcpy(number_text, operand + NUMBER_ONE);
     if (!is_legal_number(number_text)) {
-        fprintf(stderr, "Error line %d: Invalid immediate number '%s' in %s operand.\n",
+        fprintf(stdout, "Error in line %d: Invalid immediate number '%s' in %s operand.\n",
                 line_number, operand, operand_role);
         return FALSE;
     }
@@ -118,7 +118,7 @@ static boolean validate_immediate_operand(const char *operand, int line_number, 
     /* Check if the immediate value is within the allowed 12-bit range. */
     immediate_value = atoi(number_text);
     if (!is_number_range(immediate_value)) {
-        fprintf(stderr, "Error line %d: Immediate number '%s' in %s operand is out of 12-bit range.\n",
+        fprintf(stdout, "Error in line %d: Immediate number '%s' in %s operand is out of 12-bit range.\n",
                 line_number, operand, operand_role);
         return FALSE;
     }
@@ -133,20 +133,20 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
     
     extract_word(&line_ptr, entry_label);
     if (entry_label[NUMBER_ZERO] == '\0') {
-        fprintf(stderr, "Error line %d: Missing label after .entry directive.\n", state->line_number);
+        fprintf(stdout, "Error in line %d: Missing label after .entry directive.\n", state->line_number);
         return FALSE;
     }
 
     /* Check if label name length is too long. */
     if (strlen(entry_label) > MAX_LABEL_LENGTH || strlen(entry_label) == NUMBER_ZERO) {
-        fprintf(stderr, "Error line %d: Label '%s' is either empty or too long for .entry directive.\n",
+        fprintf(stdout, "Error in line %d: Label '%s' is either empty or too long for .entry directive.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
 
     /* Check if label name is legal (not starting with a digit, not containing invalid characters, etc.). */
     if (!is_legal_name(entry_label)) {
-        fprintf(stderr, "Error line %d: Illegal label name '%s' in .entry directive.\n",
+        fprintf(stdout, "Error in line %d: Illegal label name '%s' in .entry directive.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
@@ -155,19 +155,19 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
 
     /* Check for extraneous text after the label name. */
     if (*line_ptr != '\0' && *line_ptr != '\n') {
-        fprintf(stderr, "Error line %d: Extraneous text after .entry label '%s'.\n",
+        fprintf(stdout, "Error in line %d: Extraneous text after .entry label '%s'.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
 
     symbol = get_symbol(state->symbol_head, entry_label);
     if (symbol == NULL) {
-        fprintf(stderr, "Error line %d: .entry label '%s' was not found in symbol table.\n",
+        fprintf(stdout, "Error in line %d: .entry label '%s' was not found in symbol table.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
     if (symbol->is_extern) {
-        fprintf(stderr, "Error line %d: External symbol '%s' cannot be marked as .entry.\n",
+        fprintf(stdout, "Error in line %d: External symbol '%s' cannot be marked as .entry.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
@@ -221,7 +221,7 @@ static boolean validate_instruction_operands(const char *command_name, int line_
 
         info->operand_modes[operand_index] = get_addressing_mode(info->operands[operand_index]);
         if (!is_valid_addressing_mode(valid_modes, info->operand_modes[operand_index])) {
-            fprintf(stderr, "Error line %d: Invalid %s addressing mode for '%s'.\n",
+            fprintf(stdout, "Error in line %d: Invalid %s addressing mode for '%s'.\n",
                     line_number, operand_role, command_name);
             return FALSE;
         }
@@ -239,7 +239,7 @@ static boolean validate_instruction_operands(const char *command_name, int line_
 static boolean parse_instruction_line(char *first_word, char *line_ptr, int line_number, instruction_line_info *info) {
     info->command = get_command(first_word);
     if (info->command == NULL) {
-        fprintf(stderr, "Error line %d: Unknown command '%s'.\n", line_number, first_word);
+        fprintf(stdout, "Error in line %d: Unknown command '%s'.\n", line_number, first_word);
         return FALSE;
     }
 
@@ -261,7 +261,7 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
 
     if (addressing_mode == RELATIVE_MODE) {
         if (operand_text[NUMBER_ZERO] != '%') {
-            fprintf(stderr, "Error line %d: Relative operand '%s' must begin with '%%'.\n",
+            fprintf(stdout, "Error in line %d: Relative operand '%s' must begin with '%%'.\n",
                     line_number, operand_text);
             return FALSE;
         }
@@ -270,11 +270,11 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
 
     symbol_name_length = strlen(symbol_start);
     if (symbol_name_length == NUMBER_ZERO) {
-        fprintf(stderr, "Error line %d: Missing symbol name in operand '%s'.\n", line_number, operand_text);
+        fprintf(stdout, "Error in line %d: Missing symbol name in operand '%s'.\n", line_number, operand_text);
         return FALSE;
     }
     if (symbol_name_length > MAX_LABEL_LENGTH) {
-        fprintf(stderr, "Error line %d: Symbol '%s' is too long.\n", line_number, symbol_start);
+        fprintf(stdout, "Error in line %d: Symbol '%s' is too long.\n", line_number, symbol_start);
         return FALSE;
     }
 
@@ -283,13 +283,9 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
     return TRUE;
 }
 
-static boolean resolve_direct_operand(AssemblerState *state,
-                                      symbol_ptr symbol,
-                                      const char *symbol_name,
-                                      int word_index,
-                                      int operand_word_address,
-                                      extern_ptr *extern_head,
-                                      int line_number) {
+static boolean resolve_direct_operand
+(AssemblerState *state, symbol_ptr symbol,const char *symbol_name,int word_index,
+ int operand_word_address,extern_ptr *extern_head,int line_number) {
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
         state->code_image[word_index].are = ARE_EXTERNAL;
@@ -305,7 +301,7 @@ static boolean resolve_relative_operand(AssemblerState *state, symbol_ptr symbol
     int relative_value;
 
     if (symbol->is_extern) {
-        fprintf(stderr, "Error line %d: Relative addressing cannot target external symbol '%s'.\n",
+        fprintf(stdout, "Error in line %d: Relative addressing cannot target external symbol '%s'.\n",
                 line_number, symbol->label_name);
         return FALSE;
     }
@@ -335,19 +331,19 @@ static boolean resolve_symbol_operand(AssemblerState *state,
         return FALSE;
     }
     if (!is_legal_name(symbol_name)) {
-        fprintf(stderr, "Error line %d: Illegal symbol operand '%s'.\n", line_number, symbol_name);
+        fprintf(stdout, "Error in line %d: Illegal symbol operand '%s'.\n", line_number, symbol_name);
         return FALSE;
     }
 
     symbol = get_symbol(state->symbol_head, symbol_name);
     if (symbol == NULL) {
-        fprintf(stderr, "Error line %d: Undefined symbol '%s'.\n", line_number, symbol_name);
+        fprintf(stdout, "Error in line %d: Undefined symbol '%s'.\n", line_number, symbol_name);
         return FALSE;
     }
 
     word_index = operand_word_address - IC_START;
     if (word_index < NUMBER_ZERO || word_index >= MEMORY_SIZE) {
-        fprintf(stderr, "Error line %d: Operand address %d is outside code image bounds.\n",
+        fprintf(stdout, "Error in line %d: Operand address %d is outside code image bounds.\n",
                 line_number, operand_word_address);
         return FALSE;
     }
@@ -444,7 +440,7 @@ boolean run_second_pass(FILE *am_file, char *original_name, AssemblerState *stat
     boolean second_pass_errors = FALSE;
 
     if (am_file == NULL || state == NULL || extern_head == NULL) {
-        fprintf(stderr, "Error: second pass received invalid arguments.\n");
+        fprintf(stdout, "Error: second pass received invalid arguments.\n");
         return FALSE;
     }
 

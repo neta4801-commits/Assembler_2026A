@@ -4,7 +4,7 @@
 #define SECOND_PASS_H
 
 #include <stdio.h>
-#include "src/globals/constant.h"
+#include "../globals/constant.h"
 
 /* Executes second pass and, on success, builds output files (.ob/.ent/.ext). */
 boolean run_second_pass(FILE *am_file, char *original_name, AssemblerState *state, extern_ptr *extern_head);

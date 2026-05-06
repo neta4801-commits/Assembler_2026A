@@ -1,4 +1,5 @@
-/* This file checks legal words, macros and labels according to project instructions. */
+/* This file checks legal words, legal numbers macros and labels according to project instructions.
+ * In addition, it includes functions that extract words from instruction lines (data, strings and operands)  for first pass */
 
 #include <stdio.h>
 #include <string.h>

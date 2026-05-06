@@ -1,5 +1,7 @@
 /* This file handles symbols with list */
 
+/* This file has function that help us to build the symbol table. */
+
 #include <stdlib.h>
 #include <string.h>
 #include "helpers.h"

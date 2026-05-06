@@ -1,4 +1,5 @@
-/* This file checks legal words, macros and labels according to project instructions. */
+/* This file checks legal words, legal numbers macros and labels according to project instructions.
+ * In addition, it includes functions that extract words from instruction lines (data, strings and operands)  for first pass */
 
 #include <stdio.h>
 #include <string.h>
@@ -378,7 +379,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
 
         /* We put the destination operand in the dst array char by char. */
         index= NUMBER_ZERO;
-        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n')) {
+        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n') {
             dst[index++] = *(*line_ptr)++;
         }
         dst[index] = '\0';

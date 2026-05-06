@@ -7,8 +7,6 @@
 #include "passes/pre_assembler.h"
 #include "passes/first_pass.h"
 #include "passes/second_pass.h"
-#include "../outputs/build_output_file.h"
-
 
 /* This function handles some user errors, and will provide output for successful compilation,
  * calling pre_assembler, to check if the am file was generates successfully,

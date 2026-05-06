@@ -393,7 +393,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
     /* Expecting for one operand in the command */
     else if (expected_ops == NUMBER_ONE) {
         index = NUMBER_ZERO;
-        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n')) {
+        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n') {
             dst[index++] = *(*line_ptr)++;
         }
         dst[index] = '\0';

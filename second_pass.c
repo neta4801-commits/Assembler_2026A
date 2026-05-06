@@ -71,13 +71,7 @@ static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name
     extern_ptr current_node;
     extern_ptr new_node;
 
-    new_node = (extern_ptr)malloc(sizeof(extern_node));
-    if (new_node == NULL) {
-        fprintf(stderr, "Error line %d: Memory allocation failed while saving extern usage of '%s'.\n",
-                line_number, symbol_name);
-        return FALSE;
-    }
-
+    new_node = (extern_ptr)check_malloc(sizeof(extern_node));
     strcpy(new_node->name, symbol_name);
     new_node->address = usage_address;
     new_node->next = NULL;

@@ -100,16 +100,20 @@ static boolean validate_immediate_operand(const char *operand, int line_number, 
     int immediate_value;
     char number_text[MAX_LINE_LENGTH + NUMBER_TWO];
 
+    /* Check if immediate operand starts with '#' */
     if (operand[NUMBER_ZERO] != '#') {
         fprintf(stderr, "Error line %d: Immediate %s operand must start with '#'.\n", line_number, operand_role);
         return FALSE;
     }
+
+    /* Check if immediate operand is too long or empty. */
     if (strlen(operand) <= NUMBER_ONE || strlen(operand) >= MAX_LINE_LENGTH + NUMBER_TWO) {
         fprintf(stderr, "Error line %d: Missing or too long immediate value in %s operand '%s'.\n",
                 line_number, operand_role, operand);
         return FALSE;
     }
 
+    /* Copy the number part after '#' for validation. */
     strcpy(number_text, operand + NUMBER_ONE);
     if (!is_legal_number(number_text)) {
         fprintf(stderr, "Error line %d: Invalid immediate number '%s' in %s operand.\n",
@@ -117,6 +121,7 @@ static boolean validate_immediate_operand(const char *operand, int line_number, 
         return FALSE;
     }
 
+    /* Check if the immediate value is within the allowed 12-bit range. */
     immediate_value = atoi(number_text);
     if (!is_number_range(immediate_value)) {
         fprintf(stderr, "Error line %d: Immediate number '%s' in %s operand is out of 12-bit range.\n",
@@ -131,17 +136,21 @@ static boolean validate_immediate_operand(const char *operand, int line_number, 
 static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
     symbol_ptr symbol;
     char entry_label[MAX_LINE_LENGTH + NUMBER_TWO];
-
+    
     extract_word(&line_ptr, entry_label);
     if (entry_label[NUMBER_ZERO] == '\0') {
         fprintf(stderr, "Error line %d: Missing label after .entry directive.\n", state->line_number);
         return FALSE;
     }
-    if (strlen(entry_label) > MAX_LABEL_LENGTH) {
-        fprintf(stderr, "Error line %d: Label '%s' is too long for .entry directive.\n",
+
+    /* Check if label name length is too long. */
+    if (strlen(entry_label) > MAX_LABEL_LENGTH || strlen(entry_label) == NUMBER_ZERO) {
+        fprintf(stderr, "Error line %d: Label '%s' is either empty or too long for .entry directive.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
+
+    /* Check if label name is legal (not starting with a digit, not containing invalid characters, etc.). */
     if (!is_legal_name(entry_label)) {
         fprintf(stderr, "Error line %d: Illegal label name '%s' in .entry directive.\n",
                 state->line_number, entry_label);
@@ -149,6 +158,8 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
     }
 
     skip_whitespaces(&line_ptr);
+
+    /* Check for extraneous text after the label name. */
     if (*line_ptr != '\0' && *line_ptr != '\n') {
         fprintf(stderr, "Error line %d: Extraneous text after .entry label '%s'.\n",
                 state->line_number, entry_label);
@@ -180,10 +191,12 @@ static boolean set_instruction_operands(char *line_ptr, int line_number, instruc
     src_operand[NUMBER_ZERO] = '\0';
     dst_operand[NUMBER_ZERO] = '\0';
 
+    /* Return false if extraction fails. */
     if (!extract_operands(&cursor, src_operand, dst_operand, info->command->expected_ops, line_number)) {
         return FALSE;
     }
 
+    /* Copy operands in the instruction info structure for validation. */
     if (info->command->expected_ops == NUMBER_TWO) {
         strcpy(info->operands[NUMBER_ZERO], src_operand);
         strcpy(info->operands[NUMBER_ONE], dst_operand);
@@ -277,12 +290,12 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
 }
 
 static boolean resolve_direct_operand(AssemblerState *state,
-    symbol_ptr symbol,
-    const char *symbol_name,
-    int word_index,
-    int operand_word_address,
-    extern_ptr *extern_head,
-    int line_number) {
+                                      symbol_ptr symbol,
+                                      const char *symbol_name,
+                                      int word_index,
+                                      int operand_word_address,
+                                      extern_ptr *extern_head,
+                                      int line_number) {
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
         state->code_image[word_index].are = ARE_EXTERNAL;

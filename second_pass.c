@@ -20,7 +20,9 @@ typedef struct {
     int instruction_length;
 } instruction_line_info;
 
-/* Clears per-line parsed instruction data before parsing a new source line. */
+/* this function resets an instruction structure to the default empty state,
+   clears command pointer and set operand count to zero,
+   fill string buffers with null terminate */
 static void initialize_instruction_info(instruction_line_info *info) {
     int i;
     int j;
@@ -28,7 +30,7 @@ static void initialize_instruction_info(instruction_line_info *info) {
     info->command = NULL;
     info->operand_count = NUMBER_ZERO;
     info->instruction_length = NUMBER_ONE;
-
+    /*   */
     for (i = NUMBER_ZERO; i < NUMBER_TWO; i++) {
         info->operand_modes[i] = MISSING_OPERAND;
         for (j = NUMBER_ZERO; j < MAX_LINE_LENGTH + NUMBER_TWO; j++) {
@@ -37,7 +39,7 @@ static void initialize_instruction_info(instruction_line_info *info) {
     }
 }
 
-/* Must stay identical to first pass L calculation so both passes advance IC the same way. */
+/* identical to first pass L calculation so both passes advance IC the same way. */
 static int calculate_instruction_length(const command_info *command) {
     return NUMBER_ONE + command->expected_ops;
 }
@@ -93,6 +95,7 @@ static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name
     return TRUE;
 }
 
+/* Validates that an immediate operand has a '#' prefix and within range. */
 static boolean validate_immediate_operand(const char *operand, int line_number, const char *operand_role) {
     int immediate_value;
     char number_text[MAX_LINE_LENGTH + NUMBER_TWO];
@@ -274,12 +277,12 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
 }
 
 static boolean resolve_direct_operand(AssemblerState *state,
-                                      symbol_ptr symbol,
-                                      const char *symbol_name,
-                                      int word_index,
-                                      int operand_word_address,
-                                      extern_ptr *extern_head,
-                                      int line_number) {
+    symbol_ptr symbol,
+    const char *symbol_name,
+    int word_index,
+    int operand_word_address,
+    extern_ptr *extern_head,
+    int line_number) {
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
         state->code_image[word_index].are = ARE_EXTERNAL;

@@ -5,8 +5,8 @@ CFLAGS = -Wall -ansi -pedantic -g
 SRCS = src/main.c \
        src/globals/helpers.c \
        src/globals/parser.c \
-       src/passes/first_pass.c \
        src/passes/pre_assembler.c \
+       src/passes/first_pass.c \
        src/passes/second_pass.c \
        src/tables/assembler_tables.c \
        src/tables/macro_table.c \

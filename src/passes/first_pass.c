@@ -112,7 +112,8 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
 
         extract_word(&line_ptr, first_word);
 
-        /* checks if the word is a label. */
+        /* checks if the word is a label.
+         * if the word end with ':' and it isn't a legal label, we need to print an error alert to the user. */
         if (is_label(first_word)) {
             label_found= TRUE;
             /* save the label name without ':' */
@@ -120,6 +121,14 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
 
             label[strlen(first_word) - NUMBER_ONE] = '\0';
             extract_word(&line_ptr, first_word);
+        }
+        else if (strlen(first_word) > NUMBER_ZERO && first_word[strlen(first_word) - NUMBER_ONE] == ':') {
+            fprintf(stdout,
+                    "Error in line %d: Invalid label name '%s'. Labels must start with a letter and contain only letters and numbers.\n",
+                    state->line_number, first_word);
+            state->error_found = TRUE;
+            state->line_number++;
+            continue;
         }
 
 

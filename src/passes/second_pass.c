@@ -30,7 +30,7 @@ static void initialize_instruction_info(instruction_line_info *info) {
     info->command = NULL;
     info->operand_count = NUMBER_ZERO;
     info->instruction_length = NUMBER_ONE;
-    /*   */
+
     for (i = NUMBER_ZERO; i < NUMBER_TWO; i++) {
         info->operand_modes[i] = MISSING_OPERAND;
         for (j = NUMBER_ZERO; j < MAX_LINE_LENGTH + NUMBER_TWO; j++) {
@@ -60,14 +60,14 @@ static boolean extract_word_after_optional_label(char **line_ptr, char *first_wo
 }
 
 /* Directives handled entirely in first pass and ignored in second pass. */
-static boolean is_second_pass_ignored_directive(const char *word) {
+static boolean is_second_pass_ignored_directive(char *word) {
     return strcmp(word, ".data") == NUMBER_ZERO ||
            strcmp(word, ".string") == NUMBER_ZERO ||
            strcmp(word, ".extern") == NUMBER_ZERO;
 }
 
 /* Adds one extern usage entry, so .ext can print every reference address. */
-static void add_extern_usage(extern_ptr *extern_head, const char *symbol_name, int usage_address) {
+static void add_extern_usage(extern_ptr *extern_head, char *symbol_name, int usage_address) {
     extern_ptr current_node;
     extern_ptr new_node;
 
@@ -90,7 +90,7 @@ static void add_extern_usage(extern_ptr *extern_head, const char *symbol_name, i
 }
 
 /* Validates that an immediate operand has a '#' prefix and within range. */
-static boolean validate_immediate_operand(const char *operand, int line_number, const char *operand_role) {
+static boolean validate_immediate_operand( char *operand, int line_number, char *operand_role) {
     int immediate_value;
     char number_text[MAX_LINE_LENGTH + NUMBER_TWO];
 
@@ -204,12 +204,12 @@ static boolean set_instruction_operands(char *line_ptr, int line_number, instruc
 }
 
 /* Checks each operand mode and immediate values with one loop for both one/two-operand commands. */
-static boolean validate_instruction_operands(const char *command_name, int line_number, instruction_line_info *info) {
+static boolean validate_instruction_operands( char *command_name, int line_number, instruction_line_info *info) {
     int operand_index;
 
     for (operand_index = NUMBER_ZERO; operand_index < info->operand_count; operand_index++) {
         const int *valid_modes;
-        const char *operand_role;
+        char *operand_role;
 
         if (info->operand_count == NUMBER_TWO && operand_index == NUMBER_ZERO) {
             valid_modes = info->command->valid_src_operand_types;
@@ -255,8 +255,8 @@ static boolean parse_instruction_line(char *first_word, char *line_ptr, int line
 }
 
 /* Pulls symbol text from direct or relative operands and validates its length constraints. */
-static boolean extract_symbol_name(const char *operand_text, int addressing_mode, int line_number, char *symbol_name) {
-    const char *symbol_start = operand_text;
+static boolean extract_symbol_name(char *operand_text, int addressing_mode, int line_number, char *symbol_name) {
+    char *symbol_start = operand_text;
     size_t symbol_name_length;
 
     if (addressing_mode == RELATIVE_MODE) {
@@ -283,7 +283,7 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
     return TRUE;
 }
 
-static void resolve_direct_operand(AssemblerState *state, symbol_ptr symbol,const char *symbol_name,int word_index,
+static void resolve_direct_operand(AssemblerState *state, symbol_ptr symbol, char *symbol_name,int word_index,
                                             int operand_word_address,extern_ptr *extern_head) {
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
@@ -316,7 +316,7 @@ static boolean resolve_relative_operand
 
 /* Resolves one direct/relative operand to final value + ARE in code image. */
 static boolean resolve_symbol_operand
-(AssemblerState *state, const char *operand_text, int addressing_mode,
+(AssemblerState *state,  char *operand_text, int addressing_mode,
  int operand_word_address, extern_ptr *extern_head, int line_number) {
     int word_index;
     symbol_ptr symbol;
@@ -356,7 +356,7 @@ static boolean resolve_symbol_operand
 
 /* Resolves all symbol-based operands for a parsed instruction line. */
 static boolean resolve_instruction_operands
-(AssemblerState *state,const instruction_line_info *info,int instruction_address,extern_ptr *extern_head,int line_number) {
+(AssemblerState *state, instruction_line_info *info,int instruction_address,extern_ptr *extern_head,int line_number) {
     int operand_index;
     boolean success = TRUE;
 

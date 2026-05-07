@@ -7,7 +7,7 @@ mcro GEN_MC
  inc r6
  mov r3, K
 mcroend
-7LOOP: prn #48
+LOOP: prn #48
 GEN_MC
  sub r1, r4
  bne END
@@ -20,7 +20,7 @@ mcroend
  cmp val1, #-6
  bne %END
  dec K
- jmp %7LOOP
+ jmp %LOOP
  GEN_MC
  GEN_MC2
  GEN_MC2

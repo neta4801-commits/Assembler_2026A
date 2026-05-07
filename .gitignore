@@ -26,9 +26,16 @@
 *.lib
 
 # Executables
+assembler
 *.exe
 *.out
 *.app
+
+# Assembler Output
+*.ent
+*.ext
+*.ob
+*.am
 
 # CLion - just ignore everything
 .idea/

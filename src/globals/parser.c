@@ -223,7 +223,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
         * can be printed on the screen (by ASCII values),
          * otherwise this is error, so we print an alert to the user. */
         if (!isprint(**line_ptr)) {
-            fprintf(stdout, "Error in line %d: Illegal (non-printable) character in string\n", state->line_number);
+            fprintf(stdout, "Error in line %d: Illegal character that cannot be printed in string\n", state->line_number);
             state->error_found = TRUE;
             return FALSE;
         }
@@ -257,7 +257,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     /* We check if we don't have text after the end of the string.
     * If we have, this is error, so we print an alert to the user. */
     if (**line_ptr != '\0' && **line_ptr != '\n') {
-        fprintf(stdout, "Error in line %d: Extraneous text after string in .string directive\n", state->line_number);
+        fprintf(stdout, "Error in line %d: Extra text after the string in .string directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -293,7 +293,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
          * we need to print to the user.*/
         if (**line_ptr == ',') {
             if (expect_number) {
-                fprintf(stdout, "Error in line %d: Unexpected comma or multiple commas in .data\n", state->line_number);
+                fprintf(stdout, "Error in line %d: Unexpected comma in .data directive\n", state->line_number);
                 state->error_found = TRUE;
                 return FALSE;
             }
@@ -308,7 +308,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
         /* If we are expecting for ',' between the numbers.
          * If we don't have it- this is an error so we  need to print to the user. */
         if (!expect_number) {
-            fprintf(stdout, "Error in line %d: Expected comma between numbers in .data\n", state->line_number);
+            fprintf(stdout, "Error in line %d: Expected comma between numbers in .data directive\n", state->line_number);
             state->error_found = TRUE;
             return FALSE;
         }
@@ -319,13 +319,13 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
         if (num_str[NUMBER_ZERO] != '\0') {
             /* If the number isn't legal, this is an error - we need to print to the user.*/
             if (!is_legal_number(num_str)) {
-                fprintf(stdout, "Error in line %d: Invalid number '%s' in .data\n", state->line_number, num_str);
+                fprintf(stdout, "Error in line %d: Invalid number '%s' in .data directive\n", state->line_number, num_str);
                 state->error_found = TRUE;
                 return FALSE;
             }
             num_value=atoi(num_str);
             if(!is_number_range(num_value)) {
-                fprintf(stdout, "Error in line %d: Number '%d' is out of the 12 bit range for number in .data\n", state->line_number, num_value);
+                fprintf(stdout, "Error in line %d: The number '%d' is out of the 12 bit range for number in .data directive\n", state->line_number, num_value);
             }
 
             /*  We put the number on the data_image- each number is a new word in data_image.
@@ -344,7 +344,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
     /* The line spouse to end with a number and not with ',' .
      * if we end the line with ',' - this is an error, and we need to print en alert to the user. */
     if (expect_number && has_data) {
-        fprintf(stdout, "Error in line %d: Trailing comma at the end of .data directive\n", state->line_number);
+        fprintf(stdout, "Error in line %d: There is a comma at the end of .data directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -387,7 +387,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
 
         /* Missing operand - this is an error, we print an alert to the user. */
         if (strlen(src) == NUMBER_ZERO || strlen(dst) == NUMBER_ZERO) {
-            fprintf(stdout, "Error in line %d: Missing operand(s)\n", line_number);
+            fprintf(stdout, "Error in line %d: Missing at least one operand\n", line_number);
             return FALSE;
         }
     }
@@ -410,7 +410,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
     /* We check if after the operands, we don't have other text.
      * if we have - this is an error, we print an alert to the user. */
     if (**line_ptr != '\0' && **line_ptr != '\n') {
-        fprintf(stdout, "Error line %d: Extraneous text after operands\n", line_number);
+        fprintf(stdout, "Error line %d: Extra text after operands\n", line_number);
         return FALSE;
     }
     /* WE will get here also if we have zero operands for the command (for commands that expect to zero operands).  */

@@ -207,10 +207,12 @@ static boolean set_instruction_operands(char *line_ptr, int line_number, instruc
 static boolean validate_instruction_operands( char *command_name, int line_number, instruction_line_info *info) {
     int operand_index;
 
+    /* Loop through each operand */
     for (operand_index = NUMBER_ZERO; operand_index < info->operand_count; operand_index++) {
         const int *valid_modes;
         char *operand_role;
 
+        /* If its the first of two operands, its the source otherwise, it's the destination.  */
         if (info->operand_count == NUMBER_TWO && operand_index == NUMBER_ZERO) {
             valid_modes = info->command->valid_src_operand_types;
             operand_role = "source";
@@ -218,7 +220,8 @@ static boolean validate_instruction_operands( char *command_name, int line_numbe
             valid_modes = info->command->valid_dest_operand_types;
             operand_role = "destination";
         }
-
+        
+        /* get addressing mode and validate it */
         info->operand_modes[operand_index] = get_addressing_mode(info->operands[operand_index]);
         if (!is_valid_addressing_mode(valid_modes, info->operand_modes[operand_index])) {
             fprintf(stdout, "Error in line %d: Invalid %s addressing mode for '%s'.\n",
@@ -235,30 +238,36 @@ static boolean validate_instruction_operands( char *command_name, int line_numbe
     return TRUE;
 }
 
-/* Parses one instruction line into reusable structure and validates all operands. */
+/* Read an instruction line and prepare it for processing */
 static boolean parse_instruction_line(char *first_word, char *line_ptr, int line_number, instruction_line_info *info) {
+
+    /* Find the command by its name, if unknown return false and error */
     info->command = get_command(first_word);
     if (info->command == NULL) {
         fprintf(stdout, "Error in line %d: Unknown command '%s'.\n", line_number, first_word);
         return FALSE;
     }
-
+    /* Extract the operands from the line. Stop if there is a syntax error. */
     if (!set_instruction_operands(line_ptr, line_number, info)) {
         return FALSE;
     }
+
+    /* Check if the operands are legal for this command. */
     if (!validate_instruction_operands(first_word, line_number, info)) {
         return FALSE;
     }
 
+    /* Calculate how much memory this instruction will take. */
     info->instruction_length = calculate_instruction_length(info->command);
     return TRUE;
 }
 
-/* Pulls symbol text from direct or relative operands and validates its length constraints. */
+/* Takes an operand that is a symbol and extracts its name. */
 static boolean extract_symbol_name(char *operand_text, int addressing_mode, int line_number, char *symbol_name) {
     char *symbol_start = operand_text;
     size_t symbol_name_length;
 
+    /* if relative mode the name starts after the '%' , we need to check if the '%' is there */ 
     if (addressing_mode == RELATIVE_MODE) {
         if (operand_text[NUMBER_ZERO] != '%') {
             fprintf(stdout, "Error in line %d: Relative operand '%s' must begin with '%%'.\n",
@@ -282,9 +291,11 @@ static boolean extract_symbol_name(char *operand_text, int addressing_mode, int 
     symbol_name[symbol_name_length] = '\0';
     return TRUE;
 }
-
+/* Resolves a direct operand to its final value and ARE. */
 static void resolve_direct_operand(AssemblerState *state, symbol_ptr symbol, char *symbol_name,int word_index,
                                             int operand_word_address,extern_ptr *extern_head) {
+    
+    /*External symbols have no local address, we mark them as external 'E'. */
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
         state->code_image[word_index].are = ARE_EXTERNAL;
@@ -302,8 +313,9 @@ static boolean resolve_relative_operand
 (AssemblerState *state, symbol_ptr symbol, int word_index, int operand_word_address, int line_number) {
     int relative_value;
 
+    /* We cannot calculate a jump distance to an external symbol because its final memory location is unknown. */
     if (symbol->is_extern) {
-        fprintf(stdout, "Error in line %d: Relative addressing cannot target external symbol '%s'.\n",
+        fprintf(stdout, "Error in line %d: Cannot calculate final address for '%s'.\n",
                 line_number, symbol->label_name);
         return FALSE;
     }
@@ -340,6 +352,7 @@ static boolean resolve_symbol_operand
         return FALSE;
     }
 
+    /*  subtract IC_START (100) because code_image array starts from index 0. */
     word_index = operand_word_address - IC_START;
     if (word_index < NUMBER_ZERO || word_index >= MEMORY_SIZE) {
         fprintf(stdout, "Error in line %d: Operand address %d is outside code image bounds.\n",

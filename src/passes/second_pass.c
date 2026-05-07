@@ -67,7 +67,7 @@ static boolean is_second_pass_ignored_directive(const char *word) {
 }
 
 /* Adds one extern usage entry, so .ext can print every reference address. */
-static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name, int usage_address, int line_number) {
+static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name, int usage_address) {
     extern_ptr current_node;
     extern_ptr new_node;
 
@@ -285,11 +285,11 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
 
 static boolean resolve_direct_operand
 (AssemblerState *state, symbol_ptr symbol,const char *symbol_name,int word_index,
- int operand_word_address,extern_ptr *extern_head,int line_number) {
+ int operand_word_address,extern_ptr *extern_head) {
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
         state->code_image[word_index].are = ARE_EXTERNAL;
-        return add_extern_usage(extern_head, symbol_name, operand_word_address, line_number);
+        return add_extern_usage(extern_head, symbol_name, operand_word_address);
     }
 
     state->code_image[word_index].value = symbol->label_address & 0xFFF;
@@ -349,7 +349,7 @@ static boolean resolve_symbol_operand(AssemblerState *state,
     }
 
     if (addressing_mode == DIRECT_MODE) {
-        return resolve_direct_operand(state, symbol, symbol_name, word_index, operand_word_address, extern_head, line_number);
+        return resolve_direct_operand(state, symbol, symbol_name, word_index, operand_word_address, extern_head);
     }
     return resolve_relative_operand(state, symbol, word_index, operand_word_address, line_number);
 }

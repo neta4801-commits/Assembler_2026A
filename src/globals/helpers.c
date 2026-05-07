@@ -50,4 +50,3 @@ char *create_file_name(char *original_name, char *extension) {
     strcat(file_name, extension); /* secondly concatenate the extension, once it finds \0 */
     return file_name;
 }
-

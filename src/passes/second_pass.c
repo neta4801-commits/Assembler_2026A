@@ -298,7 +298,8 @@ static void resolve_direct_operand(AssemblerState *state, symbol_ptr symbol,cons
     return;
 }
 
-static boolean resolve_relative_operand(AssemblerState *state, symbol_ptr symbol, int word_index, int operand_word_address, int line_number) {
+static boolean resolve_relative_operand
+(AssemblerState *state, symbol_ptr symbol, int word_index, int operand_word_address, int line_number) {
     int relative_value;
 
     if (symbol->is_extern) {
@@ -314,12 +315,9 @@ static boolean resolve_relative_operand(AssemblerState *state, symbol_ptr symbol
 }
 
 /* Resolves one direct/relative operand to final value + ARE in code image. */
-static boolean resolve_symbol_operand(AssemblerState *state,
-                                      const char *operand_text,
-                                      int addressing_mode,
-                                      int operand_word_address,
-                                      extern_ptr *extern_head,
-                                      int line_number) {
+static boolean resolve_symbol_operand
+(AssemblerState *state, const char *operand_text, int addressing_mode,
+ int operand_word_address, extern_ptr *extern_head, int line_number) {
     int word_index;
     symbol_ptr symbol;
     char symbol_name[MAX_LABEL_LENGTH + NUMBER_ONE];
@@ -357,11 +355,8 @@ static boolean resolve_symbol_operand(AssemblerState *state,
 }
 
 /* Resolves all symbol-based operands for a parsed instruction line. */
-static boolean resolve_instruction_operands(AssemblerState *state,
-                                            const instruction_line_info *info,
-                                            int instruction_address,
-                                            extern_ptr *extern_head,
-                                            int line_number) {
+static boolean resolve_instruction_operands
+(AssemblerState *state,const instruction_line_info *info,int instruction_address,extern_ptr *extern_head,int line_number) {
     int operand_index;
     boolean success = TRUE;
 
@@ -374,12 +369,8 @@ static boolean resolve_instruction_operands(AssemblerState *state,
             operand_word_address = instruction_address + NUMBER_ONE;
         }
 
-        if (!resolve_symbol_operand(state,
-                                    info->operands[operand_index],
-                                    info->operand_modes[operand_index],
-                                    operand_word_address,
-                                    extern_head,
-                                    line_number)) {
+        if (!resolve_symbol_operand
+        (state,info->operands[operand_index],info->operand_modes[operand_index],operand_word_address,extern_head,line_number)) {
             success = FALSE;
         }
     }
@@ -468,9 +459,15 @@ boolean run_second_pass(FILE *am_file, char *original_name, AssemblerState *stat
     }
 
     if (original_name != NULL && original_name[NUMBER_ZERO] != '\0') {
-        build_output_files(original_name, state, *extern_head);
+        /* Checks if there is line code or data from the user on file.am-
+         * if the file is empty, we need to print an alert to the user.  */
+        if (state->ic > IC_START || state->dc > NUMBER_ZERO) {
+            build_output_files(original_name, state, *extern_head);
+        } else {
+            /* Optional: Notify that no output files are created for empty code */
+            printf("Notice: No code or data generated for %s. Output files will not be created.\n", original_name);
+        }
     }
-
     return TRUE;
 }
 

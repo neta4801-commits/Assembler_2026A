@@ -23,7 +23,6 @@ void build_output_files(char *original_name, AssemblerState *state, extern_ptr e
     extern_ptr current_extern;
     boolean is_current_entry = FALSE;
 
-
     /*
      *  Creating ob.file.
      *  The first line in the file describes the number of data words and machine words.

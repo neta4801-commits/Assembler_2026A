@@ -25,7 +25,8 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     char line[MAX_LINE_LENGTH + NUMBER_TWO];
     char first_word[MAX_LINE_LENGTH + NUMBER_TWO];
     char *line_ptr;
-    char *am_file_name;
+    char *am_file_name= NULL;
+    char *temp_file_name= NULL;
     FILE *am_file;
     char *temp_ptr;
     char second_word[MAX_LINE_LENGTH];
@@ -48,9 +49,15 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     state->line_number = NUMBER_ONE;
     state->error_found = FALSE;
 
-    /* create the am file name and open it for writing */
+    /* Creating name with extension .am and temporary name with extension .tmp.
+     * we send the temporary name to the am file - if errors are found in macros lines, the am file will be removed.
+     * otherwise, we change the name for am file to be with extension .am instead of extension .tmp.
+    */
+    temp_file_name = create_file_name(original_name, ".tmp");
     am_file_name = create_file_name(original_name, ".am");
-    am_file = fopen(am_file_name, "w");
+    am_file = fopen(temp_file_name, "w");
+
+
     if (am_file == NULL) {
         fprintf(stderr, "Error: Cannot create output file %s\n", am_file_name);
         free(am_file_name);
@@ -233,7 +240,23 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     }
 
     fclose(am_file);
-    free(am_file_name);
+
+    /* if there are no errors for macros - we rename the tempe file name to the original am file name.
+     * otherwise, we need to remove the file and not creat am file. */
+    if (state->error_found) {
+        remove(temp_file_name);
+    } else {
+        rename(temp_file_name, am_file_name);
+    }
+
+    /* Free safely the memory for the files. */
+    if (temp_file_name != NULL) {
+        free(temp_file_name);
+    }
+    if (am_file_name != NULL) {
+        free(am_file_name);
+    }
+
     free_macro_table(macro_head);
 
    /* Free the labels linked list */

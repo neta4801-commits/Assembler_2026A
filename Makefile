@@ -1,3 +1,5 @@
+# Makefile according to the flags required in the course.
+# project files we need to compile.
 assembler:
 	gcc -Wall -ansi -pedantic \
 	src/main.c \
@@ -12,5 +14,6 @@ assembler:
 	outputs/build_output_file.c \
 	-o assembler
 
+# To clean makefile.
 clean:
 	rm -f assembler

@@ -1,4 +1,6 @@
-/* This c file is for the first pass:
+/* This file is for the first pass: adds symbols for symbol table for second pass,
+ * checks and encodes data and string instructions on the file,
+ * encodes commands words and check addressing mode for operand's command.
  * we check the user's am.file and print him an error alerts if there are mistakes in his file.
 */
 

@@ -67,7 +67,7 @@ static boolean is_second_pass_ignored_directive(const char *word) {
 }
 
 /* Adds one extern usage entry, so .ext can print every reference address. */
-static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name, int usage_address) {
+static void add_extern_usage(extern_ptr *extern_head, const char *symbol_name, int usage_address) {
     extern_ptr current_node;
     extern_ptr new_node;
 
@@ -78,7 +78,7 @@ static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name
 
     if (*extern_head == NULL) {
         *extern_head = new_node;
-        return TRUE;
+        return;
     }
 
     current_node = *extern_head;
@@ -86,7 +86,7 @@ static boolean add_extern_usage(extern_ptr *extern_head, const char *symbol_name
         current_node = current_node->next;
     }
     current_node->next = new_node;
-    return TRUE;
+    return;
 }
 
 /* Validates that an immediate operand has a '#' prefix and within range. */
@@ -283,18 +283,19 @@ static boolean extract_symbol_name(const char *operand_text, int addressing_mode
     return TRUE;
 }
 
-static boolean resolve_direct_operand
-(AssemblerState *state, symbol_ptr symbol,const char *symbol_name,int word_index,
- int operand_word_address,extern_ptr *extern_head) {
+static void resolve_direct_operand(AssemblerState *state, symbol_ptr symbol,const char *symbol_name,int word_index,
+                                            int operand_word_address,extern_ptr *extern_head) {
     if (symbol->is_extern) {
         state->code_image[word_index].value = NUMBER_ZERO;
         state->code_image[word_index].are = ARE_EXTERNAL;
-        return add_extern_usage(extern_head, symbol_name, operand_word_address);
+
+        add_extern_usage(extern_head, symbol_name, operand_word_address);
+        return;
     }
 
     state->code_image[word_index].value = symbol->label_address & 0xFFF;
     state->code_image[word_index].are = ARE_RELOCATABLE;
-    return TRUE;
+    return;
 }
 
 static boolean resolve_relative_operand(AssemblerState *state, symbol_ptr symbol, int word_index, int operand_word_address, int line_number) {
@@ -349,7 +350,8 @@ static boolean resolve_symbol_operand(AssemblerState *state,
     }
 
     if (addressing_mode == DIRECT_MODE) {
-        return resolve_direct_operand(state, symbol, symbol_name, word_index, operand_word_address, extern_head);
+        resolve_direct_operand(state, symbol, symbol_name, word_index, operand_word_address, extern_head);
+        return TRUE;
     }
     return resolve_relative_operand(state, symbol, word_index, operand_word_address, line_number);
 }

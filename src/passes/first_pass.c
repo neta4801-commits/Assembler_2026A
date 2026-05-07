@@ -73,6 +73,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
     char line[MAX_LINE_LENGTH + NUMBER_TWO];
     char first_word[MAX_LINE_LENGTH];
     char label[MAX_LABEL_LENGTH];
+    char clean_label[MAX_LABEL_LENGTH];
     char src[MAX_LINE_LENGTH];
     char dst[MAX_LINE_LENGTH];
     char *line_ptr;
@@ -123,9 +124,16 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
             extract_word(&line_ptr, first_word);
         }
         else if (strlen(first_word) > NUMBER_ZERO && first_word[strlen(first_word) - NUMBER_ONE] == ':') {
-            fprintf(stdout,
-                    "Error in line %d: Invalid label name '%s'. Labels must start with a letter and contain only letters and numbers.\n",
-                    state->line_number, first_word);
+            strncpy(clean_label, first_word, strlen(first_word) - NUMBER_ONE);
+            clean_label[strlen(first_word) - NUMBER_ONE] = '\0';
+
+            if (is_forbidden_word(clean_label)) {
+                fprintf(stdout, "Error in line %d: Invalid label name '%s'. Cannot use a reserved word as a label.\n", state->line_number, clean_label);
+            }
+            else {
+                fprintf(stdout, "Error in line %d: Invalid label name '%s'. Labels must start with a letter and contain only alphanumeric characters.\n", state->line_number, first_word);
+            }
+
             state->error_found = TRUE;
             state->line_number++;
             continue;

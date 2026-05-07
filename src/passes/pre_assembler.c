@@ -10,7 +10,6 @@
 #include "../tables/macro_table.h"
 #include "../globals/parser.h"
 #include "../globals/helpers.h"
-#include "../globals/constant.h"
 
 /* We pass the function a pointer to the file, the original name (no extension),
  * and a pointer to struct from "AssemblerState" type.
@@ -39,15 +38,15 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     macro_ptr found_macro = NULL;
     int current_char, index;
 
-    state->line_number = NUMBER_ONE;
-    state->error_found = FALSE;
-
     label_ptr label_head = NULL;
     label_ptr current_label = NULL;
     label_ptr new_label = NULL; /* To create new label nodes */
     label_ptr next_label = NULL; /* To free label nodes at the end */
     char temp_label[MAX_LABEL_LENGTH + NUMBER_ONE]; /* To check duplicate labels  */
     boolean is_label_conflict; /* To check conflicts with label names like duplicates */
+
+    state->line_number = NUMBER_ONE;
+    state->error_found = FALSE;
 
     /* create the am file name and open it for writing */
     am_file_name = create_file_name(original_name, ".am");
@@ -85,11 +84,11 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
 
         extract_word(&line_ptr, first_word);
 
-        /* check for macroend */
+        /* check for mcroend */
         if (is_inside_macro) {
-            if (strcmp(first_word, "macroend") == NUMBER_ZERO) {
+            if (strcmp(first_word, "mcroend") == NUMBER_ZERO) {
                 skip_whitespaces(&line_ptr);
-                /*check for extraneous text after macroend */
+                /*check for extraneous text after mcroend */
                 if (*line_ptr != '\0' && *line_ptr != '\n') {
                     fprintf(stdout, "Error in line %d: Extraneous text after 'mcroend'.\n", state->line_number);
                     state->error_found = TRUE;
@@ -152,7 +151,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
                 }
 
                 /* check if the macro name is a reserved word */
-                else if (is_reserved_word(macro_name)) {
+                else if (is_forbidden_word(macro_name)) {
                     fprintf(stdout, "Error in line %d: macro name '%s' is reserved.\n", state->line_number, macro_name);
                     state->error_found = TRUE;
                     is_inside_macro = TRUE;
@@ -188,7 +187,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
                 }
             }
 
-            /* check for macroend without a matching macro */
+            /* check for mcroend without a matching macro */
             else if (strcmp(first_word, "mcroend") == NUMBER_ZERO) {
                 fprintf(stdout, "Error in line %d: 'mcroend' encountered without matching 'mcro'.\n", state->line_number);
                 state->error_found = TRUE;
@@ -247,4 +246,5 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     
     return !state->error_found;
 }
+
 

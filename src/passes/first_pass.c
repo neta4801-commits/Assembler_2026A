@@ -11,6 +11,7 @@
 #include "../globals/parser.h"
 #include "../globals/helpers.h"
 #include "../tables/assembler_tables.h"
+#include "../tables/symbol_table.h"
 
 /*
  * This function encodes the operands into the code image.
@@ -81,15 +82,16 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
     const command_info *cmd;
     int src_addressing_mode,dst_addressing_mode ,L, index ;
 
+    if (am_file == NULL || state == NULL) {
+        printf("Error: first pass received invalid arguments.\n");
+        return FALSE;
+    }
+
     state->ic = IC_START;
     state->dc = NUMBER_ZERO;
     state->line_number = NUMBER_ONE;
     state->error_found = FALSE;
 
-    if (am_file == NULL || state == NULL) {
-        printf("Error: first pass received invalid arguments.\n");
-        return FALSE;
-    }
 
     /* we check line by line for errors in data, command and labels in the file.*/
     while (fgets(line, sizeof(line), am_file)) {

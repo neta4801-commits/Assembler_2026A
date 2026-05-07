@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "parser.h"
 #include "../tables/assembler_tables.h"
@@ -298,7 +299,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
             }
             (*line_ptr)++;
 
-            // if we expected for ',' - in the next char we need to get a number.
+            /*  if we expected for ',' - in the next char we need to get a number. */
             expect_number = TRUE;
 
             continue;
@@ -415,4 +416,5 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
     /* WE will get here also if we have zero operands for the command (for commands that expect to zero operands).  */
     return TRUE;
 }
+
 

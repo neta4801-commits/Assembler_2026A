@@ -60,3 +60,4 @@ boolean extract_data(char **line_ptr,  AssemblerState *state);
 boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops, int line_number);
 
 #endif
+

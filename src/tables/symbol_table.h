@@ -3,7 +3,7 @@
 #ifndef SYMBOL_TABLES_H
 #define SYMBOL_TABLES_H
 
-#include "src/globals/constant.h"
+#include "../globals/constant.h"
 
 /* This function gets a pointer to the head of the symbol list, and symbol details (name,address and the label type-code,data or extern).
  * The function adds the new symbol to the symbol list and returns true if it success, otherwise false. */

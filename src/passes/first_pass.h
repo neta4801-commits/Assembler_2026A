@@ -4,7 +4,7 @@
 #define FIRST_PASS_H
 
 #include <stdio.h>
-#include "src/globals/constant.h"
+#include "../globals/constant.h"
 
 /*
  * This function gets the am_file and the assembler's state.

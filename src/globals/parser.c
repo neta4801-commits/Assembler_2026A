@@ -1,11 +1,13 @@
-/* This file checks legal words, macros and labels according to project instructions. */
+/* This file checks legal words, legal numbers macros and labels according to project instructions.
+ * In addition, it includes functions that extract words from instruction lines (data, strings and operands)  for first pass */
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "parser.h"
-#include "../../assembler_tables.h"
-#include "../globals/helpers.h"
+#include "../tables/assembler_tables.h"
+#include "helpers.h"
 
 #define RANG_MIN_NUM -2048
 #define  RANGE_MAX_NUM 2047
@@ -203,7 +205,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     /* We check if the string start with " before the word.
      * If not, this is error, so we print an alert to the user. */
     if (**line_ptr != '\"') {
-        fprintf(stderr, "Error line %d: Missing opening quote for .string directive\n", ctx->line_number);
+        fprintf(stdout, "Error in line %d: Missing opening quote for .string directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -221,7 +223,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
         * can be printed on the screen (by ASCII values),
          * otherwise this is error, so we print an alert to the user. */
         if (!isprint(**line_ptr)) {
-            fprintf(stderr, "Error line %d: Illegal (non-printable) character in string\n", state->line_number);
+            fprintf(stdout, "Error in line %d: Illegal (non-printable) character in string\n", state->line_number);
             state->error_found = TRUE;
             return FALSE;
         }
@@ -239,7 +241,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     /* We need to check if the last char on the string is: ".
      * If not, this is error, so we print an alert to the user. */
     if (**line_ptr != '\"') {
-        fprintf(stderr, "Error line %d: Missing closing quote for .string directive\n", state->line_number);
+        fprintf(stdout, "Error in line %d: Missing closing quote for .string directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -255,7 +257,7 @@ boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     /* We check if we don't have text after the end of the string.
     * If we have, this is error, so we print an alert to the user. */
     if (**line_ptr != '\0' && **line_ptr != '\n') {
-        fprintf(stderr, "Error line %d: Extraneous text after string in .string directive\n", state->line_number);
+        fprintf(stdout, "Error in line %d: Extraneous text after string in .string directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -291,13 +293,13 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
          * we need to print to the user.*/
         if (**line_ptr == ',') {
             if (expect_number) {
-                fprintf(stderr, "Error line %d: Unexpected comma or multiple commas in .data\n", state->line_number);
+                fprintf(stdout, "Error in line %d: Unexpected comma or multiple commas in .data\n", state->line_number);
                 state->error_found = TRUE;
                 return FALSE;
             }
             (*line_ptr)++;
 
-            // if we expected for ',' - in the next char we need to get a number.
+            /*  if we expected for ',' - in the next char we need to get a number. */
             expect_number = TRUE;
 
             continue;
@@ -306,7 +308,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
         /* If we are expecting for ',' between the numbers.
          * If we don't have it- this is an error so we  need to print to the user. */
         if (!expect_number) {
-            fprintf(stderr, "Error line %d: Expected comma between numbers in .data\n", state->line_number);
+            fprintf(stdout, "Error in line %d: Expected comma between numbers in .data\n", state->line_number);
             state->error_found = TRUE;
             return FALSE;
         }
@@ -317,13 +319,13 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
         if (num_str[NUMBER_ZERO] != '\0') {
             /* If the number isn't legal, this is an error - we need to print to the user.*/
             if (!is_legal_number(num_str)) {
-                fprintf(stderr, "Error line %d: Invalid number '%s' in .data\n", state->line_number, num_str);
+                fprintf(stdout, "Error in line %d: Invalid number '%s' in .data\n", state->line_number, num_str);
                 state->error_found = TRUE;
                 return FALSE;
             }
             num_value=atoi(num_str);
             if(!is_number_range(num_value)) {
-                fprintf(stderr, "Error line %d: Number '%s' is out of the 12 bit range for number in .data\n", state->line_number, num_value);
+                fprintf(stdout, "Error in line %d: Number '%d' is out of the 12 bit range for number in .data\n", state->line_number, num_value);
             }
 
             /*  We put the number on the data_image- each number is a new word in data_image.
@@ -342,7 +344,7 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
     /* The line spouse to end with a number and not with ',' .
      * if we end the line with ',' - this is an error, and we need to print en alert to the user. */
     if (expect_number && has_data) {
-        fprintf(stderr, "Error line %d: Trailing comma at the end of .data directive\n", state->line_number);
+        fprintf(stdout, "Error in line %d: Trailing comma at the end of .data directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }
@@ -358,7 +360,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
     if (expected_ops == NUMBER_TWO) {
         /* We put the source operand in the src array char by char. */
         index = NUMBER_ZERO;
-        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n')) {
+        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n') {
             src[index++] = *(*line_ptr)++;
         }
         src[index] = '\0';
@@ -368,7 +370,7 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
         /* We check if we have ',' between the two operands.
         * If we don't- this is an error, we print an alert to the user. */
         if (**line_ptr != ',') {
-            fprintf(stderr, "Error line %d: Missing comma between operands\n", line_number);
+            fprintf(stdout, "Error in line %d: Missing comma between operands\n", line_number);
             return FALSE;
         }
 
@@ -378,28 +380,28 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
 
         /* We put the destination operand in the dst array char by char. */
         index= NUMBER_ZERO;
-        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n')) {
+        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n') {
             dst[index++] = *(*line_ptr)++;
         }
         dst[index] = '\0';
 
         /* Missing operand - this is an error, we print an alert to the user. */
         if (strlen(src) == NUMBER_ZERO || strlen(dst) == NUMBER_ZERO) {
-            fprintf(stderr, "Error line %d: Missing operand(s)\n", line_number);
+            fprintf(stdout, "Error in line %d: Missing operand(s)\n", line_number);
             return FALSE;
         }
     }
     /* Expecting for one operand in the command */
     else if (expected_ops == NUMBER_ONE) {
         index = NUMBER_ZERO;
-        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n')) {
+        while (**line_ptr && **line_ptr != ',' && **line_ptr != ' ' && **line_ptr != '\t' && **line_ptr != '\n') {
             dst[index++] = *(*line_ptr)++;
         }
         dst[index] = '\0';
 
         /* Missing operand - this is an error, we print an alert to the user. */
         if (strlen(dst) == NUMBER_ZERO) {
-            fprintf(stderr, "Error line %d: Missing operand\n", line_number);
+            fprintf(stdout, "Error in line %d: Missing operand\n", line_number);
             return FALSE;
         }
     }
@@ -408,10 +410,11 @@ boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops
     /* We check if after the operands, we don't have other text.
      * if we have - this is an error, we print an alert to the user. */
     if (**line_ptr != '\0' && **line_ptr != '\n') {
-        fprintf(stderr, "Error line %d: Extraneous text after operands\n", line_number);
+        fprintf(stdout, "Error line %d: Extraneous text after operands\n", line_number);
         return FALSE;
     }
     /* WE will get here also if we have zero operands for the command (for commands that expect to zero operands).  */
     return TRUE;
 }
+
 

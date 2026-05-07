@@ -1,4 +1,6 @@
-/* This c file is for the first pass:
+/* This file is for the first pass: adds symbols for symbol table for second pass,
+ * checks and encodes data and string instructions on the file,
+ * encodes commands words and check addressing mode for operand's command.
  * we check the user's am.file and print him an error alerts if there are mistakes in his file.
 */
 
@@ -6,9 +8,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include "first_pass.h"
-#include "parser.h"
-#include "src/globals/helpers.h"
-#include "assembler_tables.h"
+#include "../globals/parser.h"
+#include "../globals/helpers.h"
+#include "../tables/assembler_tables.h"
+#include "../tables/symbol_table.h"
 
 /*
  * This function encodes the operands into the code image.
@@ -79,6 +82,11 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
     const command_info *cmd;
     int src_addressing_mode,dst_addressing_mode ,L, index ;
 
+    if (am_file == NULL || state == NULL) {
+        printf("Error: first pass received invalid arguments.\n");
+        return FALSE;
+    }
+
     state->ic = IC_START;
     state->dc = NUMBER_ZERO;
     state->line_number = NUMBER_ONE;
@@ -121,7 +129,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                 /* if we don't have this label yet on the list, we add it with data type.
                  * Otherwise, we have this label name already ,and we need to print an error alert for the user. */
                 if (!add_symbol(&state->symbol_head, label, state->dc, FALSE, TRUE, FALSE)) {
-                    fprintf(stderr, "Error line %d: Label '%s' redefined.\n", state->line_number, label);
+                    fprintf(stdout, "Error in line %d: Label '%s' redefined.\n", state->line_number, label);
                     state->error_found = TRUE;
                 }
             }
@@ -142,7 +150,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
             /* if there is a label before .extern or .entry,
              * we print a warning to the user according to the project instructions. */
             if (label_found) {
-                printf("Warning line %d: Label before %s directive is meaningless and ignored.\n", state->line_number, first_word);
+                printf("Warning in line %d: Label before %s directive is meaningless and ignored.\n", state->line_number, first_word);
             }
 
             /* we check on .entry in the second_pass. */
@@ -161,7 +169,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
             if (is_legal_name(label)) {
                 label_existing = get_symbol(state->symbol_head, label);
                 if (label_existing && !label_existing->is_extern) {
-                    fprintf(stderr, "Error line %d: Symbol '%s' defined locally, cannot be .extern\n", state->line_number, label);
+                    fprintf(stdout, "Error in line %d: Symbol '%s' defined locally, cannot be .extern\n", state->line_number, label);
                     state->error_found = TRUE;
                 }
                 else if (!label_existing) {
@@ -169,7 +177,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                 }
             }
             else {
-                fprintf(stderr, "Error line %d: Invalid extern label syntax '%s'\n", state->line_number, label);
+                fprintf(stdout, "Error in line %d: Invalid extern label syntax '%s'\n", state->line_number, label);
                 state->error_found = TRUE;
             }
         }
@@ -178,7 +186,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
         else {
             if (label_found) {
                 if (!add_symbol(&state->symbol_head, label, state->ic, TRUE, FALSE, FALSE)) {
-                    fprintf(stderr, "Error line %d: Label '%s' redefined.\n", state->line_number, label);
+                    fprintf(stdout, "Error in line %d: Label '%s' redefined.\n", state->line_number, label);
                     state->error_found = TRUE;
                 }
             }
@@ -190,7 +198,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
              * */
             cmd = get_command(first_word);
             if (!cmd) {
-                fprintf(stderr, "Error line %d: Unknown command '%s'\n", state->line_number, first_word);
+                fprintf(stdout, "Error in line %d: Unknown command '%s'\n", state->line_number, first_word);
                 state->error_found = TRUE;
             }
             else {
@@ -214,21 +222,21 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                         dst_addressing_mode = get_addressing_mode(dst);
 
                         if (!is_valid_addressing_mode(cmd->valid_src_operand_types, src_addressing_mode)) {
-                            fprintf(stderr, "Error line %d: Invalid source addressing mode.\n", state->line_number);
+                            fprintf(stdout, "Error in line %d: Invalid source addressing mode.\n", state->line_number);
                             state->error_found = TRUE;
                         }
                         if (!is_valid_addressing_mode(cmd->valid_dest_operand_types, dst_addressing_mode)) {
-                            fprintf(stderr, "Error line %d: Invalid destination addressing mode.\n", state->line_number);
+                            fprintf(stdout, "Error in line %d: Invalid destination addressing mode.\n", state->line_number);
                             state->error_found = TRUE;
                         }
                         if (src_addressing_mode == IMMEDIATE_MODE) {
                             /* we send the src str from index 1 because we need to remove '#'. */
                             if (!is_legal_number(src + NUMBER_ONE)) {
-                                fprintf(stderr, "Error line %d: Invalid number format '%s'\n", state->line_number, src);
+                                fprintf(stdout, "Error in line %d: Invalid number format '%s'\n", state->line_number, src);
                                 state->error_found = TRUE;
                             }
                             else if (!is_number_range(atoi(src + NUMBER_ONE))) {
-                                fprintf(stderr, "Error line %d: Number '%s' is out of the 12 bit range for number\n", state->line_number, src);
+                                fprintf(stdout, "Error in line %d: Number '%s' is out of the 12 bit range for number\n", state->line_number, src);
                                 state->error_found = TRUE;
                             }
                         }
@@ -237,7 +245,7 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                     else if (cmd->expected_ops == NUMBER_ONE) {
                         dst_addressing_mode = get_addressing_mode(dst);
                         if (!is_valid_addressing_mode(cmd->valid_dest_operand_types, dst_addressing_mode)) {
-                            fprintf(stderr, "Error line %d: Invalid destination addressing mode.\n", state->line_number);
+                            fprintf(stdout, "Error in line %d: Invalid destination addressing mode.\n", state->line_number);
                             state->error_found = TRUE;
                         }
                     }
@@ -245,11 +253,11 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                     if (cmd->expected_ops >= NUMBER_ONE) {
                         if (dst_addressing_mode == IMMEDIATE_MODE) {
                             if (!is_legal_number(dst + NUMBER_ONE)) {
-                                fprintf(stderr, "Error line %d: Invalid number format '%s'\n", state->line_number, dst);
+                                fprintf(stdout, "Error in line %d: Invalid number format '%s'\n", state->line_number, dst);
                                 state->error_found = TRUE;
                             }
                             else if (!is_number_range(atoi(dst + NUMBER_ONE))) {
-                                fprintf(stderr, "Error line %d: Number '%s' out of 12-bit range\n", state->line_number, dst);
+                                fprintf(stdout, "Error in line %d: Number '%s' out of 12-bit range\n", state->line_number, dst);
                                 state->error_found = TRUE;
                             }
                         }

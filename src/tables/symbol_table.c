@@ -1,8 +1,10 @@
 /* This file handles symbols with list */
 
+/* This file has function that help us to build the symbol table. */
+
 #include <stdlib.h>
 #include <string.h>
-#include "helpers.h"
+#include "../globals/helpers.h"
 
 /* This function gets a pointer to the head of the symbol list, and symbol details (name,address and the label type-code,data or extern).
  * The function adds the new symbol to the symbol list and returns true if it success, otherwise false. */

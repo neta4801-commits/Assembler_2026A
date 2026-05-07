@@ -3,7 +3,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "../globals/constant.h"
+#include "constant.h"
 
 
 /* There are words that we can use then as a macro name or label name, for example registers name as a label.
@@ -60,3 +60,4 @@ boolean extract_data(char **line_ptr,  AssemblerState *state);
 boolean extract_operands(char **line_ptr, char *src, char *dst, int expected_ops, int line_number);
 
 #endif
+

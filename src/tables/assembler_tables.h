@@ -3,7 +3,7 @@
 #ifndef ASSEMBLER_TABLE_H
 #define ASSEMBLER_TABLE_H
 
-#include "src/globals/constant.h"
+#include "../globals/constant.h"
 
 /* This function is const because those are commands data from the project instructions that we can't change.
  * This function gets a command name and checks if this is a legal command:

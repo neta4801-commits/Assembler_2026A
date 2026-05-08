@@ -45,6 +45,15 @@ static int calculate_instruction_length(const command_info *command) {
 }
 
 /* Reads first field and skips an optional leading label. */
+static void skip_optional_label(char **line_ptr, char *first_word) {
+    extract_word(line_ptr, first_word);
+
+    if (is_label(first_word)) {
+        extract_word(line_ptr, first_word);
+    }
+}
+
+/* Reads first field and skips an optional leading label.
 static boolean extract_word_after_optional_label(char **line_ptr, char *first_word, int line_number) {
     extract_word(line_ptr, first_word);
 
@@ -57,7 +66,7 @@ static boolean extract_word_after_optional_label(char **line_ptr, char *first_wo
     }
 
     return TRUE;
-}
+} */
 
 /* Directives handled entirely in first pass and ignored in second pass. */
 static boolean is_second_pass_ignored_directive(char *word) {
@@ -96,7 +105,7 @@ static boolean validate_immediate_operand( char *operand, int line_number, char 
 
     /* Check if immediate operand starts with '#' */
     if (operand[NUMBER_ZERO] != '#') {
-        fprintf(stdout, "Error in line %d: Immediate %s operand must start with '#'.\n", line_number, operand_role);
+        fprintf(stdout, "Error in line %d: Immediate addressing mode for %s operand must start with '#'.\n", line_number, operand_role);
         return FALSE;
     }
 
@@ -133,7 +142,7 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
     
     extract_word(&line_ptr, entry_label);
     if (entry_label[NUMBER_ZERO] == '\0') {
-        fprintf(stdout, "Error in line %d: Missing label after .entry directive.\n", state->line_number);
+        fprintf(stdout, "Error in line %d: Missing a label after .entry directive.\n", state->line_number);
         return FALSE;
     }
 
@@ -423,9 +432,12 @@ static boolean process_source_line(char *line, AssemblerState *state, extern_ptr
         return TRUE;
     }
 
-    if (!extract_word_after_optional_label(&line_ptr, first_word, state->line_number)) {
+    skip_optional_label(&line_ptr, first_word);
+
+    /*if (!extract_word_after_optional_label(&line_ptr, first_word, state->line_number)) {
         return FALSE;
-    }
+    } */
+
     if (is_second_pass_ignored_directive(first_word)) {
         return TRUE;
     }

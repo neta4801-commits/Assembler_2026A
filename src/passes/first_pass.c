@@ -119,9 +119,15 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
             label_found= TRUE;
             /* save the label name without ':' */
             strncpy(label, first_word, strlen(first_word) - NUMBER_ONE);
-
             label[strlen(first_word) - NUMBER_ONE] = '\0';
+            /* We check if the word after label is a command or directive. if not, we need to print an error to the user */
             extract_word(&line_ptr, first_word);
+            if (first_word[NUMBER_ZERO] == '\0') {
+                fprintf(stdout, "Error in line %d: Label without command or directive.\n", state->line_number);
+                state->error_found = TRUE;
+                state->line_number++;
+                continue;
+            }
         }
         else if (strlen(first_word) > NUMBER_ZERO && first_word[strlen(first_word) - NUMBER_ONE] == ':') {
             strncpy(clean_label, first_word, strlen(first_word) - NUMBER_ONE);

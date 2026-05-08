@@ -201,9 +201,16 @@ int get_addressing_mode(char *operand) {
  * If we have extra text or missing quote we print error to the user and return false, otherwise, true. */
 boolean extract_string_data(char **line_ptr,  AssemblerState *state) {
     skip_whitespaces(line_ptr);
+    /* We check if the string directive isn't empty.
+     * If it does, we print an error alert to the user.*/
+    if (**line_ptr == '\0' || **line_ptr == '\n') {
+        fprintf(stdout, "Error in line %d: Missing string after .string directive\n", state->line_number);
+        state->error_found = TRUE;
+        return FALSE;
+    }
 
     /* We check if the string start with " before the word.
-     * If not, this is error, so we print an alert to the user. */
+     * If not, this is error, so we print an error alert to the user. */
     if (**line_ptr != '\"') {
         fprintf(stdout, "Error in line %d: Missing opening quote for .string directive\n", state->line_number);
         state->error_found = TRUE;
@@ -345,6 +352,13 @@ boolean extract_data(char **line_ptr,  AssemblerState *state) {
      * if we end the line with ',' - this is an error, and we need to print en alert to the user. */
     if (expect_number && has_data) {
         fprintf(stdout, "Error in line %d: There is a comma at the end of .data directive\n", state->line_number);
+        state->error_found = TRUE;
+        return FALSE;
+    }
+
+    /* we need to check if there is data in data directive. if not, we print an error alert to the user. */
+    if (!has_data) {
+        fprintf(stdout, "Error in line %d: Missing data values after .data directive\n", state->line_number);
         state->error_found = TRUE;
         return FALSE;
     }

@@ -22,7 +22,7 @@ int main (int argc, char *argv[]) {
   
   /* Check if user entered input file names */
     if (argc < NUMBER_TWO) {
-        fprintf(stderr, "Error: no input files provided. \n");
+        fprintf(stdout, "Error: no input files provided. \n");
         return EXIT_FAILURE;
     }
     
@@ -32,7 +32,7 @@ int main (int argc, char *argv[]) {
         source_file = fopen(file_name, "r");
         
         if (source_file == NULL) {
-            fprintf(stderr, "Error: Cannot open file '%s'. Skipping to next.\n", file_name);
+            fprintf(stdout, "Error: Cannot open file '%s'. Skipping to next.\n", file_name);
             free(file_name);
             continue;
         }
@@ -73,7 +73,7 @@ int main (int argc, char *argv[]) {
 
                 fclose(am_file);
             } else {
-                fprintf(stderr, "Error: Cannot open %s for reading.\n", am_file_name);
+                fprintf(stdout, "Error: Cannot open %s for reading.\n", am_file_name);
             }
             free(am_file_name);
 

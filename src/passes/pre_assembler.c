@@ -59,7 +59,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
 
 
     if (am_file == NULL) {
-        fprintf(stderr, "Error: Cannot create an output file %s\n", am_file_name);
+        fprintf(stdout, "Error: Cannot create an output file %s\n", am_file_name);
         free(am_file_name);
         return FALSE;
     }

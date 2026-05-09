@@ -10,7 +10,7 @@
 void *check_malloc(size_t size) { /* must have malloc safety check.*/
     void *ptr = malloc(size);
     if (ptr == NULL) {
-      fprintf(stdout, "Memory allocation failed.\n"); /* sending error output to stderr not stdout */
+      fprintf(stdout, "Memory allocation failed.\n"); /* sending error output to stdout */
       exit(EXIT_FAILURE);
     }
     return ptr;

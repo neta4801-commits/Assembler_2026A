@@ -490,8 +490,7 @@ boolean run_second_pass(FILE *am_file, char *original_name, AssemblerState *stat
             build_output_files(original_name, state, *extern_head);
         }
         else {
-            /* Optional: Notify that no output files are created for empty code */
-            printf("Notice: No code or data generated for %s. Output files will not be created.\n", original_name);
+            printf("There isn't code or data created for file %s, so the output files will not be created.\n", original_name);
         }
     }
     return TRUE;

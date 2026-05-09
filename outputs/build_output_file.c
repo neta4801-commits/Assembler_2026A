@@ -45,7 +45,7 @@ void build_output_files(char *original_name, AssemblerState *state, extern_ptr e
         fclose(ob_file);
     }
     else{
-        fprintf(stdout, "Error: Cannot create output file %s\n", ob_name);
+        fprintf(stdout, "Error: Cannot create the output file %s\n", ob_name);
     }
 
     free(ob_name);
@@ -79,7 +79,7 @@ void build_output_files(char *original_name, AssemblerState *state, extern_ptr e
             fclose(ent_file);
         }
         else{
-            fprintf(stdout, "Error: Cannot create output file %s\n", entry_name);
+            fprintf(stdout, "Error: Cannot create the output file %s\n", entry_name);
         }
         free(entry_name);
     }
@@ -103,7 +103,7 @@ void build_output_files(char *original_name, AssemblerState *state, extern_ptr e
             fclose(ext_file);
         }
         else{
-            fprintf(stdout, "Error: Cannot create output file %s\n", extern_name);
+            fprintf(stdout, "Error: Cannot create the output file %s\n", extern_name);
         }
         free(extern_name);
     }

@@ -32,7 +32,7 @@ int main (int argc, char *argv[]) {
         source_file = fopen(file_name, "r");
         
         if (source_file == NULL) {
-            fprintf(stdout, "Error: Cannot open file '%s'. Skipping to next.\n", file_name);
+            fprintf(stdout, "Error: Cannot open file '%s'.\n", file_name);
             free(file_name);
             continue;
         }
@@ -45,21 +45,21 @@ int main (int argc, char *argv[]) {
         current_context.symbol_head = NULL;
         extern_head = NULL;
 
-        printf("Processing macros for file: %s\n", file_name);
+        printf("Starting pre assembler for file: %s\n", file_name);
         
         /* Spreading the macros */
         if (pre_assemble(source_file, argv[i], &current_context)) {
-            printf("Success! created %s.am\n", argv[i]);
+            printf("Success! Created %s.am\n", argv[i]);
 
             /* First Pass and Second Pass Execution */
             am_file_name = create_file_name(argv[i], ".am");
             am_file = fopen(am_file_name, "r");
 
             if (am_file != NULL) {
-                printf("Starting first pass for %s\n", am_file_name);
+                printf("Starting first pass for file %s\n", am_file_name);
                 
                 if (first_pass(am_file, &current_context)) {
-                    printf("Starting second pass for %s\n", am_file_name);
+                    printf("Starting second pass for file %s\n", am_file_name);
 
                     /* run_second_pass generates the .ob, .ent, and .ext files */
                     if (run_second_pass(am_file, argv[i], &current_context, &extern_head)) {
@@ -73,12 +73,12 @@ int main (int argc, char *argv[]) {
 
                 fclose(am_file);
             } else {
-                fprintf(stdout, "Error: Cannot open %s for reading.\n", am_file_name);
+                fprintf(stdout, "Error: Cannot open file %s for reading.\n", am_file_name);
             }
             free(am_file_name);
 
         } else {
-            printf("Failed: Errors found in %s\n", file_name);
+            printf("Failed: Errors found in file %s\n", file_name);
         }
 
         /* Memory cleanup for symbols and externs between different files */

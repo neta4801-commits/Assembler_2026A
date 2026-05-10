@@ -1,4 +1,10 @@
-/* Main.c, this file will be the main file for our project */
+/*
+ * This is an assembler project for MAMAN14 2026A in open university,
+ * by Neta Cohen 213178023 and Ido Issaki 206592297.
+ */
+
+
+/* This file - main.c, will be the main file for our project */
 #include <stdio.h>
 #include <stdlib.h>
 #include "globals/constant.h"

@@ -1,0 +1,120 @@
+/* constant header file */
+/* This file includes constants and structs that used in several files  */
+
+#ifndef CONSTANT_H
+#define CONSTANT_H
+
+/* constant numbers */
+#define NUMBER_ZERO 0
+#define NUMBER_ONE 1
+#define NUMBER_TWO 2
+#define NUMBER_THREE 3
+#define NUMBER_FOUR 4
+#define NUMBER_MINUS_ONE -1
+
+/* Constant values according to course manual. */
+#define MAX_LINE_LENGTH 80
+/* MAX_LABEL_LENGTH = Max length for label and also for macro names. */
+#define MAX_LABEL_LENGTH 31
+#define MEMORY_SIZE 4096
+#define IC_START 100
+#define NUM_COMMANDS 16
+
+/* Addressing mode */
+#define IMMEDIATE_MODE 0
+#define DIRECT_MODE 1
+#define RELATIVE_MODE 2
+#define REGISTER_DIRECT_MODE 3
+/* If we don't have a source or a destination operand for the command. */
+#define  MISSING_OPERAND -1
+
+/* the bits position for machine word for each command's fields (opcode,funct, addressing modes for source operand).
+ * for destination operand, the addressing modes are in the right place (the end of the word). */
+#define OPCODE_PLACE 8
+#define  FUNCT_PLACE 4
+#define SRC_ADDRESSING_MODE_PLACE 2
+
+
+typedef enum {
+    FALSE = NUMBER_ZERO,
+    TRUE = NUMBER_ONE
+} boolean;
+
+
+/* gives 'A','R','E' types for commands.
+ * ARE_NOT_DEFINE_YET= we don't know yet the command type. we will know it later. */
+typedef enum {
+    ARE_ABSOLUTE = 'A',
+    ARE_RELOCATABLE = 'R',
+    ARE_EXTERNAL = 'E',
+    ARE_NOT_DEFINE_YET ='0'
+} command_type_are;
+
+/* value - Each machine word is 12 bits so we use short (16 bits) to store the commands machine code.
+ * are - Gives us command type- A,R,E (1 bit from the 16 bits) */
+typedef struct {
+    unsigned short value;
+    command_type_are are;
+} machine_word;
+
+
+
+/* Each command has its own name, opcode, funct, operands and addressing modes. */
+typedef struct {
+    char *command_name;
+    unsigned int opcode;
+    unsigned int funct;
+    /* Each command has a different number of operands (0,1 or 2). */
+    int expected_ops;
+    /* We have four addressing modes, so the array (for the 'source operand' and the 'destination operand') size is four. */
+    int valid_src_operand_types[NUMBER_FOUR];
+    int valid_dest_operand_types[NUMBER_FOUR];
+} command_info;
+
+
+ /* represents a single symbol from the assembly source code, stores label name,memory address and type. */
+typedef struct symbol_node {
+    char label_name[MAX_LABEL_LENGTH + NUMBER_ONE];
+    int label_address;
+    unsigned int is_code   : NUMBER_ONE;
+    unsigned int is_data   : NUMBER_ONE;
+    unsigned int is_entry  : NUMBER_ONE;
+    unsigned int is_extern : NUMBER_ONE;
+    struct symbol_node *next;
+} symbol_node;
+
+/* A pointer to the symbol list. */
+typedef symbol_node *symbol_ptr;
+
+/* Represents a single usage of an external symbol in code image. */
+typedef struct extern_node {
+    char name[MAX_LABEL_LENGTH + NUMBER_ONE];
+    int address;
+    struct extern_node *next;
+} extern_node;
+
+/* A pointer to the extern-usage list. */
+typedef extern_node *extern_ptr;
+
+/* Manages current state of the assembly process,
+ * track IC/DC, store machine code and data, manages the symbol table and flags for errors. */
+typedef struct {
+    int ic;
+    int dc;
+    int line_number;
+    boolean error_found;
+    machine_word code_image[MEMORY_SIZE];
+    machine_word data_image[MEMORY_SIZE];
+    symbol_ptr symbol_head;
+} AssemblerState;
+
+/* represents a single label for pre assembler, stores label name. */
+typedef struct label_node {
+    char label_name[MAX_LABEL_LENGTH + NUMBER_ONE];
+    struct label_node *next;
+} label_node;
+
+/* A pointer to the label list. */
+typedef label_node *label_ptr;
+
+#endif

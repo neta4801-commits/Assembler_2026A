@@ -105,7 +105,9 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
         cmd= NULL;
         line_ptr = line;
 
-        /* comment or empty line - we need to continue to the next line. */
+        /* comment or empty line - we need to continue to the next line.
+         * although we handle empty lines and comments on pre assembler file,
+         * when we open the macros, empty lines and comments can pass so we need to ignore them.*/
         if (is_empty_or_comment(line_ptr)) {
             state->line_number++;
             continue;
@@ -114,8 +116,10 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
         extract_word(&line_ptr, first_word);
 
         /* checks if the word is a label.
+         * we need to check the label length, if it's too long, we print an error alert to the user.
          * if the word end with ':' and it isn't a legal label, we need to print an error alert to the user. */
         if (is_label(first_word)) {
+
             label_found= TRUE;
             /* save the label name without ':' */
             strncpy(label, first_word, strlen(first_word) - NUMBER_ONE);
@@ -130,27 +134,30 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
             }
         }
         else if (strlen(first_word) > NUMBER_ZERO && first_word[strlen(first_word) - NUMBER_ONE] == ':') {
-            strncpy(clean_label, first_word, strlen(first_word) - NUMBER_ONE);
-            clean_label[strlen(first_word) - NUMBER_ONE] = '\0';
-
-            if (is_forbidden_word(clean_label)) {
-                fprintf(stdout, "Error in line %d: '%s' is a reserved word and cannot be used as a label name.\n", state->line_number, clean_label);
+            if (strlen(first_word) - NUMBER_ONE > MAX_LABEL_LENGTH) {
+                fprintf(stdout, "Error in line %d: The label name '%s' is too long.\n", state->line_number, first_word);
             }
             else {
-                fprintf(stdout, "Error in line %d: Invalid label name '%s'.\n", state->line_number, first_word);
-            }
+                strncpy(clean_label, first_word, strlen(first_word) - NUMBER_ONE);
+                clean_label[strlen(first_word) - NUMBER_ONE] = '\0';
 
+                if (is_forbidden_word(clean_label)) {
+                    fprintf(stdout, "Error in line %d: '%s' is a reserved word and cannot be used as a label name.\n", state->line_number, clean_label);
+                }
+                else {
+                    fprintf(stdout, "Error in line %d: Invalid label name '%s'.\n", state->line_number, first_word);
+                }
+            }
             state->error_found = TRUE;
             state->line_number++;
             continue;
         }
 
-
         /* checks if the word is ".data" or ".string". and update dc by using functions from parser file. */
         if (strcmp(first_word, ".data") == NUMBER_ZERO || strcmp(first_word, ".string") == NUMBER_ZERO) {
             if (label_found) {
                 /* if we don't have this label yet on the list, we add it with data type.
-                 * Otherwise, we have this label name already ,and we need to print an error alert for the user. */
+                 * Otherwise, we have this label name already, and we need to print an error alert for the user. */
                 if (!add_symbol(&state->symbol_head, label, state->dc, FALSE, TRUE, FALSE)) {
                     fprintf(stdout, "Error in line %d: The label '%s' redefined.\n", state->line_number, label);
                     state->error_found = TRUE;

@@ -23,7 +23,7 @@ typedef struct {
 /* this function resets an instruction structure to the default empty state,
    clears command pointer and set operand count to zero,
    fill string buffers with null terminate */
-static void initialize_instruction_info(instruction_line_info *info) {
+static void reset_instruction(instruction_line_info *info) {
     int i;
     int j;
 
@@ -53,20 +53,6 @@ static void skip_optional_label(char **line_ptr, char *first_word) {
     }
 }
 
-/* Reads first field and skips an optional leading label.
-static boolean extract_word_after_optional_label(char **line_ptr, char *first_word, int line_number) {
-    extract_word(line_ptr, first_word);
-
-    if (is_label(first_word)) {
-        extract_word(line_ptr, first_word);
-        if (first_word[NUMBER_ZERO] == '\0') {
-            fprintf(stdout, "Error in line %d: Label without command or directive.\n", line_number);
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-} */
 
 /* Directives handled entirely in first pass and ignored in second pass. */
 static boolean is_second_pass_ignored_directive(char *word) {
@@ -98,45 +84,9 @@ static void add_extern_usage(extern_ptr *extern_head, char *symbol_name, int usa
     return;
 }
 
-/* Validates that an immediate operand has a '#' prefix and within range. */
-static boolean validate_immediate_operand( char *operand, int line_number, char *operand_role) {
-    int immediate_value;
-    char number_text[MAX_LINE_LENGTH + NUMBER_TWO];
-
-    /* Check if immediate operand starts with '#' */
-    if (operand[NUMBER_ZERO] != '#') {
-        fprintf(stdout, "Error in line %d: Immediate addressing mode for %s operand must start with '#'.\n", line_number, operand_role);
-        return FALSE;
-    }
-
-    /* Check if immediate operand is too long or empty. */
-    if (strlen(operand) <= NUMBER_ONE || strlen(operand) >= MAX_LINE_LENGTH + NUMBER_TWO) {
-        fprintf(stdout, "Error in line %d: Missing or too long immediate value in %s operand '%s'.\n",
-                line_number, operand_role, operand);
-        return FALSE;
-    }
-
-    /* Copy the number part after '#' for validation. */
-    strcpy(number_text, operand + NUMBER_ONE);
-    if (!is_legal_number(number_text)) {
-        fprintf(stdout, "Error in line %d: Invalid immediate number '%s' in %s operand.\n",
-                line_number, operand, operand_role);
-        return FALSE;
-    }
-
-    /* Check if the immediate value is within the allowed 12-bit range. */
-    immediate_value = atoi(number_text);
-    if (!is_number_range(immediate_value)) {
-        fprintf(stdout, "Error in line %d: Immediate number '%s' in %s operand is out of 12-bit range.\n",
-                line_number, operand, operand_role);
-        return FALSE;
-    }
-
-    return TRUE;
-}
 
 /* .entry is validated in second pass because symbol table is complete only after first pass. */
-static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
+static boolean handle_entry_directive(char *line_ptr, AssemblerState *state) {
     symbol_ptr symbol;
     char entry_label[MAX_LINE_LENGTH + NUMBER_TWO];
     
@@ -147,8 +97,8 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
     }
 
     /* Check if label name length is too long. */
-    if (strlen(entry_label) > MAX_LABEL_LENGTH || strlen(entry_label) == NUMBER_ZERO) {
-        fprintf(stdout, "Error in line %d: Label '%s' is either empty or too long for .entry directive.\n",
+    if (strlen(entry_label) > MAX_LABEL_LENGTH ) {
+        fprintf(stdout, "Error in line %d: Label '%s' is too long for .entry directive.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
@@ -164,14 +114,14 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
 
     /* Check for extraneous text after the label name. */
     if (*line_ptr != '\0' && *line_ptr != '\n') {
-        fprintf(stdout, "Error in line %d: Extraneous text after .entry label '%s'.\n",
+        fprintf(stdout, "Error in line %d: Extra text after .entry label '%s'.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
 
     symbol = get_symbol(state->symbol_head, entry_label);
     if (symbol == NULL) {
-        fprintf(stdout, "Error in line %d: .entry label '%s' was not found in symbol table.\n",
+        fprintf(stdout, "Error in line %d: Label '%s' is declared as .entry but is not defined in this file.\n",
                 state->line_number, entry_label);
         return FALSE;
     }
@@ -186,7 +136,7 @@ static boolean process_entry_directive(char *line_ptr, AssemblerState *state) {
 }
 
 /* Extracts raw operand strings from parser output into a unified operands array. */
-static boolean set_instruction_operands(char *line_ptr, int line_number, instruction_line_info *info) {
+static boolean get_instruction_operands(char *line_ptr, int line_number, instruction_line_info *info) {
     char src_operand[MAX_LINE_LENGTH + NUMBER_TWO];
     char dst_operand[MAX_LINE_LENGTH + NUMBER_TWO];
     char *cursor = line_ptr;
@@ -212,58 +162,22 @@ static boolean set_instruction_operands(char *line_ptr, int line_number, instruc
     return TRUE;
 }
 
-/* Checks each operand mode and immediate values with one loop for both one/two-operand commands. */
-static boolean validate_instruction_operands( char *command_name, int line_number, instruction_line_info *info) {
-    int operand_index;
 
-    /* Loop through each operand */
-    for (operand_index = NUMBER_ZERO; operand_index < info->operand_count; operand_index++) {
-        const int *valid_modes;
-        char *operand_role;
-
-        /* If its the first of two operands, its the source otherwise, it's the destination.  */
-        if (info->operand_count == NUMBER_TWO && operand_index == NUMBER_ZERO) {
-            valid_modes = info->command->valid_src_operand_types;
-            operand_role = "source";
-        } else {
-            valid_modes = info->command->valid_dest_operand_types;
-            operand_role = "destination";
-        }
-        
-        /* get addressing mode and validate it */
-        info->operand_modes[operand_index] = get_addressing_mode(info->operands[operand_index]);
-        if (!is_valid_addressing_mode(valid_modes, info->operand_modes[operand_index])) {
-            fprintf(stdout, "Error in line %d: Invalid %s addressing mode for '%s'.\n",
-                    line_number, operand_role, command_name);
-            return FALSE;
-        }
-
-        if (info->operand_modes[operand_index] == IMMEDIATE_MODE &&
-            !validate_immediate_operand(info->operands[operand_index], line_number, operand_role)) {
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-}
-
-/* Read an instruction line and prepare it for processing */
-static boolean parse_instruction_line(char *first_word, char *line_ptr, int line_number, instruction_line_info *info) {
-
-    /* Find the command by its name, if unknown return false and error */
+/* Read an instruction line and extracts its operands and addressing modes. */
+static boolean get_instruction_info(char *first_word, char *line_ptr, int line_number, instruction_line_info *info) {
+    int i;
+    /* Find the command by its name, this command is already legal, we checked it in the first pass. */
     info->command = get_command(first_word);
-    if (info->command == NULL) {
-        fprintf(stdout, "Error in line %d: Unknown command '%s'.\n", line_number, first_word);
-        return FALSE;
-    }
+
     /* Extract the operands from the line. Stop if there is a syntax error. */
-    if (!set_instruction_operands(line_ptr, line_number, info)) {
+    if (!get_instruction_operands(line_ptr, line_number, info)) {
         return FALSE;
     }
 
-    /* Check if the operands are legal for this command. */
-    if (!validate_instruction_operands(first_word, line_number, info)) {
-        return FALSE;
+    /* We check the addressing mode for the operand in the command,
+     * in order to encode the words we didn't encode in first pass.*/
+    for (i = NUMBER_ZERO; i < info->operand_count; i++) {
+              info->operand_modes[i] = get_addressing_mode(info->operands[i]);
     }
 
     /* Calculate how much memory this instruction will take. */
@@ -271,35 +185,18 @@ static boolean parse_instruction_line(char *first_word, char *line_ptr, int line
     return TRUE;
 }
 
-/* Takes an operand that is a symbol and extracts its name. */
-static boolean extract_symbol_name(char *operand_text, int addressing_mode, int line_number, char *symbol_name) {
+/*Takes an operand that is a symbol and extracts its name.*/
+static void extract_symbol_name(char *operand_text, int addressing_mode, char *symbol_name) {
     char *symbol_start = operand_text;
-    size_t symbol_name_length;
 
-    /* if relative mode the name starts after the '%' , we need to check if the '%' is there */ 
+    /* if relative mode the name starts after the '%' , we need to check if the '%' is there. */
     if (addressing_mode == RELATIVE_MODE) {
-        if (operand_text[NUMBER_ZERO] != '%') {
-            fprintf(stdout, "Error in line %d: Relative operand '%s' must begin with '%%'.\n",
-                    line_number, operand_text);
-            return FALSE;
-        }
         symbol_start = operand_text + NUMBER_ONE;
     }
-
-    symbol_name_length = strlen(symbol_start);
-    if (symbol_name_length == NUMBER_ZERO) {
-        fprintf(stdout, "Error in line %d: Missing symbol name in operand '%s'.\n", line_number, operand_text);
-        return FALSE;
-    }
-    if (symbol_name_length > MAX_LABEL_LENGTH) {
-        fprintf(stdout, "Error in line %d: Symbol '%s' is too long.\n", line_number, symbol_start);
-        return FALSE;
-    }
-
-    strncpy(symbol_name, symbol_start, MAX_LABEL_LENGTH);
-    symbol_name[symbol_name_length] = '\0';
-    return TRUE;
+    strcpy(symbol_name, symbol_start);
 }
+
+
 /* Resolves a direct operand to its final value and ARE. */
 static void resolve_direct_operand(AssemblerState *state, symbol_ptr symbol, char *symbol_name,int word_index,
                                             int operand_word_address,extern_ptr *extern_head) {
@@ -347,13 +244,7 @@ static boolean resolve_symbol_operand
         return TRUE;
     }
 
-    if (!extract_symbol_name(operand_text, addressing_mode, line_number, symbol_name)) {
-        return FALSE;
-    }
-    if (!is_legal_name(symbol_name)) {
-        fprintf(stdout, "Error in line %d: Illegal symbol operand '%s'.\n", line_number, symbol_name);
-        return FALSE;
-    }
+    extract_symbol_name(operand_text, addressing_mode, symbol_name);
 
     symbol = get_symbol(state->symbol_head, symbol_name);
     if (symbol == NULL) {
@@ -401,14 +292,14 @@ static boolean resolve_instruction_operands
 }
 
 /* Handles one instruction line end-to-end: parse, resolve symbols, and update IC. */
-static boolean process_instruction_line(char *first_word, char *line_ptr, AssemblerState *state, extern_ptr *extern_head) {
+static boolean handle_instruction_line(char *first_word, char *line_ptr, AssemblerState *state, extern_ptr *extern_head) {
     boolean success = TRUE;
     int instruction_address = state->ic;
     instruction_line_info instruction_info;
 
-    initialize_instruction_info(&instruction_info);
+    reset_instruction(&instruction_info);
 
-    if (!parse_instruction_line(first_word, line_ptr, state->line_number, &instruction_info)) {
+    if (!get_instruction_info(first_word, line_ptr, state->line_number, &instruction_info)) {
         if (instruction_info.command != NULL) {
             state->ic += calculate_instruction_length(instruction_info.command);
         }
@@ -423,29 +314,27 @@ static boolean process_instruction_line(char *first_word, char *line_ptr, Assemb
     return success;
 }
 
-/* Handles one source line and delegates to the appropriate second-pass action. */
-static boolean process_source_line(char *line, AssemblerState *state, extern_ptr *extern_head) {
+/* Handles one line and forwards to the appropriate second-pass action. */
+static boolean handle_line(char *line, AssemblerState *state, extern_ptr *extern_head) {
     char first_word[MAX_LINE_LENGTH + NUMBER_TWO];
     char *line_ptr = line;
 
+    /*although we handle empty lines and comments on pre assembler file,
+    * when we open the macros, empty lines and comments can pass so we need to ignore them. */
     if (is_empty_or_comment(line_ptr)) {
         return TRUE;
     }
 
     skip_optional_label(&line_ptr, first_word);
 
-    /*if (!extract_word_after_optional_label(&line_ptr, first_word, state->line_number)) {
-        return FALSE;
-    } */
-
     if (is_second_pass_ignored_directive(first_word)) {
         return TRUE;
     }
     if (strcmp(first_word, ".entry") == NUMBER_ZERO) {
-        return process_entry_directive(line_ptr, state);
+        return handle_entry_directive(line_ptr, state);
     }
 
-    return process_instruction_line(first_word, line_ptr, state, extern_head);
+    return handle_instruction_line(first_word, line_ptr, state, extern_head);
 }
 
 boolean second_pass(FILE *am_file, AssemblerState *state, extern_ptr *extern_head) {
@@ -472,7 +361,7 @@ boolean run_second_pass(FILE *am_file, char *original_name, AssemblerState *stat
     state->line_number = NUMBER_ONE;
 
     while (fgets(line, sizeof(line), am_file) != NULL) {
-        if (!process_source_line(line, state, extern_head)) {
+        if (!handle_line(line, state, extern_head)) {
             second_pass_errors = TRUE;
         }
         state->line_number++;
@@ -496,6 +385,8 @@ boolean run_second_pass(FILE *am_file, char *original_name, AssemblerState *stat
     return TRUE;
 }
 
+
+/* Free safely the memory for the list. */
 void free_extern_list(extern_ptr head) {
     extern_ptr temp;
     while (head != NULL) {

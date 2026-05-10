@@ -159,7 +159,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
 
                 /* check if the macro name is a reserved word */
                 else if (is_forbidden_word(macro_name)) {
-                    fprintf(stdout, "Error in line %d: The macro name: '%s' is reserved.\n", state->line_number, macro_name);
+                    fprintf(stdout, "Error in line %d: The macro name: '%s' is reserved word\n", state->line_number, macro_name);
                     state->error_found = TRUE;
                     is_inside_macro = TRUE;
                     current_macro = NULL;
@@ -200,18 +200,21 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
                 state->error_found = TRUE;
             }
 
-            /* not a macro */
+            /* not a macro
+             * Check if the first word is a legal label (ends with ':') and add it to the labels list
+             * we use the function is_label from parser.
+             * if the word doesn't a legal label, we check it in the first pass. */
             else {
-                /* Check if the first word is a label (ends with ':') and add it to the labels linked list */
-                if (strlen(first_word) > NUMBER_ZERO && first_word[strlen(first_word) - NUMBER_ONE] == ':') {
+                if (is_label(first_word)) {
                     strncpy(temp_label, first_word, strlen(first_word) - NUMBER_ONE);
                     temp_label[strlen(first_word) - NUMBER_ONE] = '\0';
 
-                    /* Validate the label name */
+                    /* Validate the label name against macros */
                     if (get_macro(macro_head, temp_label) != NULL) {
                         fprintf(stdout, "Error in line %d: The label name '%s' cannot be identical to a defined macro name.\n", state->line_number, temp_label);
                         state->error_found = TRUE;
                     }
+
                     /* Memory allocation for the new label */
                     else {
                         new_label = check_malloc(sizeof(label_node));
@@ -219,8 +222,9 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
                         new_label->next = label_head;
                         label_head = new_label;
                     }
-
                 }
+
+
 
                 /* Check if the first word is a macro name and expand it if found, otherwise write the line as is to the .am file. */
                 if ((found_macro = get_macro(macro_head, first_word)) != NULL) {

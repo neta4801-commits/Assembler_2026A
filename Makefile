@@ -2,7 +2,7 @@
 # project files we need to compile.
 assembler:
 	gcc -Wall -ansi -pedantic \
-	src/main.c \
+	src/assembler.c \
 	src/passes/pre_assembler.c \
 	src/passes/first_pass.c \
 	src/passes/second_pass.c \

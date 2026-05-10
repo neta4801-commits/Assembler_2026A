@@ -4,7 +4,7 @@
  */
 
 
-/* This file - main.c, will be the main file for our project */
+/* This file - assembler.c, will be the main file for our project */
 #include <stdio.h>
 #include <stdlib.h>
 #include "globals/constant.h"

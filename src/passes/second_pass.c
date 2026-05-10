@@ -12,6 +12,7 @@
 #include "../tables/symbol_table.h"
 #include "../../outputs/build_output_file.h"
 
+/* represents the information on the label. */
 typedef struct {
     const command_info *command;
     char operands[NUMBER_TWO][MAX_LINE_LENGTH + NUMBER_TWO];
@@ -190,7 +191,8 @@ static boolean resolve_relative_operand
     int relative_value;
 
     /* We cannot calculate a jump distance to an external symbol because its final memory location is unknown.
-     * we don't know id we need it according to the instruction, but it's important.*/
+     * we don't know if we need it according to the instruction,
+     * but it's important because we can't jump to an extern label. */
     if (symbol->is_extern) {
         fprintf(stdout, "Error in line %d: Cannot calculate final address for '%s'.\n",
                 line_number, symbol->label_name);

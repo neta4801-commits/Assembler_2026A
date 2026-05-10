@@ -108,11 +108,13 @@ typedef struct {
     symbol_ptr symbol_head;
 } AssemblerState;
 
+/* represents a single label for pre assembler, stores label name. */
 typedef struct label_node {
     char label_name[MAX_LABEL_LENGTH + NUMBER_ONE];
     struct label_node *next;
 } label_node;
 
+/* A pointer to the label list. */
 typedef label_node *label_ptr;
 
 #endif

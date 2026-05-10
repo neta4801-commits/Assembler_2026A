@@ -78,7 +78,7 @@ int main (int argc, char *argv[]) {
             free(am_file_name);
 
         } else {
-            printf("Failed: Errors found in file %s\n", file_name);
+            printf("Failed: Errors found during pre assembler in %s\n", file_name);
         }
 
         /* Memory cleanup for symbols and externs between different files */

@@ -67,7 +67,7 @@ boolean pre_assemble(FILE *source_file, char *original_name, AssemblerState *sta
     while (fgets(line, sizeof(line), source_file) != NULL) {
         /* Check for line length (the maximum allowed is 80 characters) and avoid false error at the end of file */
         if (strchr(line, '\n') == NULL && !feof(source_file)) {
-            fprintf(stdout, "Error in line %d: The line exceeds from max length for lines.\n", state->line_number);
+            fprintf(stdout, "Error in line %d: The line is too long from max length for lines.\n", state->line_number);
             state->error_found = TRUE;
             /* Skip the rest of the line if it exceeds the maximum length until newline or EOF is found */
             while ((current_char = fgetc(source_file)) != '\n' && current_char != EOF);

@@ -176,27 +176,57 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                 }
             }
         }
+        /*
+         * We need to check if there is a label after .entry or .extern directive,
+         * that the label is legal and in the legal length for label.
+         * because the label is without ":" in .entry and .extern,  we need to use the function is_legal_name(label)).
+         * and also, that there isn't an extra text after the directive.
+         */
         else if (strcmp(first_word, ".extern") == NUMBER_ZERO || strcmp(first_word, ".entry") == NUMBER_ZERO) {
             /* if there is a label before .extern or .entry,
              * we print a warning to the user according to the project instructions. */
             if (label_found) {
                 printf("Warning in line %d: Label before %s directive is meaningless and ignored.\n", state->line_number, first_word);
             }
+            extract_word(&line_ptr, label);
 
-            /* we check on .entry in the second_pass. */
+            if (label[NUMBER_ZERO] == '\0') {
+                fprintf(stdout, "Error in line %d: Missing label after %s directive.\n", state->line_number, first_word);
+                state->error_found = TRUE;
+                state->line_number++;
+                continue;
+            }
+
+            if (strlen(label) > MAX_LABEL_LENGTH) {
+                fprintf(stdout, "Error in line %d: Label '%s' is too long.\n", state->line_number, label);
+                state->error_found = TRUE;
+            }
+            else if (!is_legal_name(label)) {
+                fprintf(stdout, "Error in line %d: Invalid label name '%s' for directive .\n", state->line_number, label);
+                state->error_found = TRUE;
+            }
+
+            /* Check for extraneous text after the label */
+            skip_whitespaces(&line_ptr);
+            if (*line_ptr != '\0' && *line_ptr != '\n') {
+                fprintf(stdout, "Error in line %d: Extra text after %s directive.\n", state->line_number, first_word);
+                state->error_found = TRUE;
+            }
+
+
+            /* we check on the label in .entry in the second_pass. */
             if (strcmp(first_word, ".entry") == NUMBER_ZERO) {
                 state->line_number++;
                 continue;
             }
 
-            extract_word(&line_ptr, label);
 
-            /* we check if the label in .extern is a legal name- if it isn't we print an error alert to the user.
-             * (in .extern, the label is without ":" so we need to use the function is_legal_name(label)).
-             * we also need to chek if the label already exists in the symbol table. if it isn't we add it.
+            /* we get here if we have an .extern label:
+             * we also need to check if the label for .extern is already exists in the symbol table.
+             * if it isn't, and we didn't find errors in the label line we add it.
              * if it is and its type isn't in .extern, we need to print an error alert to the user.
             */
-            if (is_legal_name(label)) {
+            if (!state->error_found) {
                 label_existing = get_symbol(state->symbol_head, label);
                 if (label_existing && !label_existing->is_extern) {
                     fprintf(stdout, "Error in line %d: The symbol '%s' defined locally, cannot be .extern\n", state->line_number, label);
@@ -206,13 +236,10 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                     add_symbol(&state->symbol_head, label, NUMBER_ZERO, FALSE, FALSE, TRUE);
                 }
             }
-            else {
-                fprintf(stdout, "Error in line %d: Invalid extern label name '%s'\n", state->line_number, label);
-                state->error_found = TRUE;
-            }
         }
-            /* we found a label in instruction line, we need to add it to the symbol table with code type.
-             * if it already exists, we print an error alert to the user. */
+
+        /* we found a label in instruction line, we need to add it to the symbol table with code type.
+        * if it already exists, we print an error alert to the user. */
         else {
             if (label_found) {
                 if (!add_symbol(&state->symbol_head, label, state->ic, TRUE, FALSE, FALSE)) {
@@ -296,6 +323,14 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
                     /* we calculate the count of words we need for this command with L. */
                     L = NUMBER_ONE + cmd->expected_ops;
 
+                    /* if the ic is become bigger than MEMORY_SIZE in the file,
+                     * we print an error that the program is too large.   */
+                    if ((state->ic + L - IC_START) >= MEMORY_SIZE) {
+                        fprintf(stdout, "Error: The program is too large for the memory size %d.\n", MEMORY_SIZE);
+                        state->error_found = TRUE;
+                        return FALSE;
+                    }
+
                     if (state->error_found) {
                         state->line_number++;
                         continue;
@@ -329,6 +364,13 @@ boolean first_pass(FILE *am_file, AssemblerState *state) {
             current_symbol->label_address += state->ic;
         }
         current_symbol = current_symbol->next;
+    }
+
+    /* we chack the final memory file after summing IC and DC */
+    if ((state->ic - IC_START) + state->dc >= MEMORY_SIZE) {
+        fprintf(stdout, "Error: The program is too large for the memory size %d.\n", MEMORY_SIZE);
+        state->error_found = TRUE;
+        return FALSE;
     }
     return !state->error_found;
 }

@@ -84,41 +84,12 @@ static void add_extern_usage(extern_ptr *extern_head, char *symbol_name, int usa
     return;
 }
 
-
-/* .entry is validated in second pass because symbol table is complete only after first pass. */
+/* we handle .entry label after we checked in first pass that the label is legal,
+ * because symbol table is completed only after first pass. */
 static boolean handle_entry_directive(char *line_ptr, AssemblerState *state) {
     symbol_ptr symbol;
     char entry_label[MAX_LINE_LENGTH + NUMBER_TWO];
-    
     extract_word(&line_ptr, entry_label);
-    if (entry_label[NUMBER_ZERO] == '\0') {
-        fprintf(stdout, "Error in line %d: Missing a label after .entry directive.\n", state->line_number);
-        return FALSE;
-    }
-
-    /* Check if label name length is too long. */
-    if (strlen(entry_label) > MAX_LABEL_LENGTH ) {
-        fprintf(stdout, "Error in line %d: Label '%s' is too long for .entry directive.\n",
-                state->line_number, entry_label);
-        return FALSE;
-    }
-
-    /* Check if label name is legal (not starting with a digit, not containing invalid characters, etc.). */
-    if (!is_legal_name(entry_label)) {
-        fprintf(stdout, "Error in line %d: Illegal label name '%s' in .entry directive.\n",
-                state->line_number, entry_label);
-        return FALSE;
-    }
-
-    skip_whitespaces(&line_ptr);
-
-    /* Check for extraneous text after the label name. */
-    if (*line_ptr != '\0' && *line_ptr != '\n') {
-        fprintf(stdout, "Error in line %d: Extra text after .entry label '%s'.\n",
-                state->line_number, entry_label);
-        return FALSE;
-    }
-
     symbol = get_symbol(state->symbol_head, entry_label);
     if (symbol == NULL) {
         fprintf(stdout, "Error in line %d: Label '%s' is declared as .entry but is not defined in this file.\n",
@@ -130,7 +101,6 @@ static boolean handle_entry_directive(char *line_ptr, AssemblerState *state) {
                 state->line_number, entry_label);
         return FALSE;
     }
-
     symbol->is_entry = TRUE;
     return TRUE;
 }
@@ -219,7 +189,8 @@ static boolean resolve_relative_operand
 (AssemblerState *state, symbol_ptr symbol, int word_index, int operand_word_address, int line_number) {
     int relative_value;
 
-    /* We cannot calculate a jump distance to an external symbol because its final memory location is unknown. */
+    /* We cannot calculate a jump distance to an external symbol because its final memory location is unknown.
+     * we don't know id we need it according to the instruction, but it's important.*/
     if (symbol->is_extern) {
         fprintf(stdout, "Error in line %d: Cannot calculate final address for '%s'.\n",
                 line_number, symbol->label_name);
@@ -254,11 +225,6 @@ static boolean resolve_symbol_operand
 
     /*  subtract IC_START (100) because code_image array starts from index 0. */
     word_index = operand_word_address - IC_START;
-    if (word_index < NUMBER_ZERO || word_index >= MEMORY_SIZE) {
-        fprintf(stdout, "Error in line %d: Operand address %d is outside code image bounds.\n",
-                line_number, operand_word_address);
-        return FALSE;
-    }
 
     if (addressing_mode == DIRECT_MODE) {
         resolve_direct_operand(state, symbol, symbol_name, word_index, operand_word_address, extern_head);
